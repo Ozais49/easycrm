@@ -6,7 +6,7 @@
 ```
 [Browser: React SPA] --Clerk JWT--> [Cem.Host (.NET 10)]
                                         |-- Modules (Crm, Calendar, Sales, Projects, Portfolio, Inbox, Settings, Identity)
-                                        |-- Outbox dispatcher (background)
+                                        |-- Cem.Platform: audit log API, outbox dispatcher (background)
                                         |-- Webhooks (/webhooks/meta, /webhooks/tiktok, /webhooks/clerk)
                                         v
                                   [PostgreSQL (RLS)]   [Object storage (R2 / local)]
@@ -19,11 +19,11 @@ Single deployable modular monolith — see [ADR-0001](../adr/0001-modular-monoli
 1. Clerk JWT validated (JWKS) → user + active org claims
 2. Tenant resolution: Clerk org id → `TenantId` (`ITenantContext`); Postgres session var set for RLS
 3. Permission resolution: effective role permissions (cached per user+tenant)
-4. Endpoint → Mediator command/query → pipeline behaviors (validation, permission, transaction, outbox)
+4. Endpoint → Mediator command/query → pipeline behaviors (validation); audit entries and outbox messages are written by the module context in its own SaveChanges
 5. Response serialization strips `[Sensitive]` fields the caller cannot read
 
 ## Cross-cutting
 - Errors: RFC 7807 ProblemDetails
-- Logging: TODO (Serilog assumed)
+- Logging: built-in `Microsoft.Extensions.Logging` with the JSON console formatter (simple console in Development); no Serilog — [ADR-0014](../adr/0014-backend-conventions.md)
 - Real-time: TODO (SignalR for inbox/notifications assumed)
-- Background jobs: outbox dispatcher, token refresh, reminders — TODO library choice
+- Background jobs: plain `BackgroundService`s (outbox dispatcher; later token refresh, reminders) plus the outbox for durable, retried work; no Hangfire/Quartz — [ADR-0017](../adr/0017-audit-log-and-outbox.md)

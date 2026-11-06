@@ -4,7 +4,7 @@
 
 ## Naming
 - snake_case tables and columns (EF naming convention plugin); plural table names
-- Schema per module — TODO confirm (`crm`, `sales`, `projects`, ...)
+- Schema per module (confirmed; migrations history table `__ef_migrations_history` lives in the module schema) (`crm`, `sales`, `projects`, ...)
 - FKs `<entity>_id`; indexes `ix_<table>_<cols>`; unique `ux_...`
 
 ## Required columns

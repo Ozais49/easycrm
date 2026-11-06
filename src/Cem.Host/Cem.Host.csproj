@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <TieredPGO>true</TieredPGO>
+    <UserSecretsId>cem-host</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Soft memory limit behaviour for the 1 GB VPS (ADR-0009). -->
+    <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="5" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BuildingBlocks\Cem.Infrastructure.Common\Cem.Infrastructure.Common.csproj" />
+    <ProjectReference Include="..\BuildingBlocks\Cem.Platform\Cem.Platform.csproj" />
+    <ProjectReference Include="..\BuildingBlocks\Cem.SharedKernel\Cem.SharedKernel.csproj" />
+    <ProjectReference Include="..\Modules\Identity\Cem.Identity.Endpoints\Cem.Identity.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Identity\Cem.Identity.Infrastructure\Cem.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Settings\Cem.Settings.Endpoints\Cem.Settings.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Settings\Cem.Settings.Infrastructure\Cem.Settings.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Mediator.Abstractions" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Mediator.SourceGenerator">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+</Project>

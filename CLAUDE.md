@@ -3,7 +3,15 @@
 Multi-tenant CRM. .NET 10 API (`src/`) + React web (`web/`). Project overview, stack and all docs: [docs/README.md](docs/README.md)
 
 ## Commands
-TODO (build / run / migrate / deploy)
+```bash
+dotnet tool restore                      # once: installs dotnet-ef
+dotnet build                             # warnings are errors
+dotnet run --project src/Cem.Host        # http://localhost:5080  (/health, /openapi/v1.json in Development)
+# new migration for a module context (replace placeholders):
+dotnet ef migrations add <Name> --project src/Modules/<Module>/<Module>.Infrastructure --startup-project src/Cem.Host --context <Module>DbContext
+dotnet ef database update --project src/Modules/<Module>/<Module>.Infrastructure --startup-project src/Cem.Host --context <Module>DbContext
+```
+Deploy: TODO.
 
 ## Rules
 - Tenant isolation: every tenant entity implements `ITenantEntity`; never `IgnoreQueryFilters` outside platform admin.

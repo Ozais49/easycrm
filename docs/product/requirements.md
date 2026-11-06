@@ -50,7 +50,9 @@ Small creative & service-based orgs (studios, agencies, photographers, consultan
 - Link conversations to Contacts/Leads, assign, reply
 
 ### Settings / Admin
-- Tenant branding, timezone, currency, tax rates, picklists (stages, statuses, event types)
+- **Built (Phase 1):** tenant settings — time zone, date display (AD/BS/both), brand color (overrides `--primary`); created for each new tenant from `TenantCreated`, readable by every member, edited with `Settings:Edit`
+- **Deferred:** logo (needs R2 uploads); picklists (stages, statuses, event types), tax rates, watermark settings and custom fields arrive with the modules that use them (Sales, Calendar, Portfolio)
+- Currency is fixed to NPR (see localization guide)
 - Users & invites, Teams, Roles (permission matrix), Integrations, Custom fields
 
 ### Dashboard

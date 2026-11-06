@@ -16,7 +16,7 @@ public sealed class UpsertMembershipHandler(IdentityProvisioner provisioner, IId
             return Result.Success(); // soft-deleted organization or user; nothing to link
         }
 
-        var membership = await provisioner.EnsureMembershipAsync(tenant, user, cancellationToken);
+        var membership = await provisioner.EnsureMembershipAsync(tenant, user, command.IsOrgAdmin, cancellationToken);
         membership.Activate(timeProvider.GetUtcNow());
         membership.LinkClerkMembership(command.ClerkMembershipId);
         await store.SaveChangesAsync(cancellationToken);

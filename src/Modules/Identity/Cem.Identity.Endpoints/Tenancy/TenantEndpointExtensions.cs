@@ -1,13 +1,18 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 
 namespace Cem.Identity.Endpoints.Tenancy;
 
 public static class TenantEndpointExtensions
 {
-    /// <summary>Resolves tenant and user for every endpoint in the group; they are available through the request context.</summary>
+    /// <summary>
+    /// Marks every endpoint in the group as tenant-scoped; <see cref="TenantResolutionMiddleware"/> then resolves
+    /// tenant and user (and loads permissions) before the endpoint runs.
+    /// </summary>
     public static TBuilder RequireTenant<TBuilder>(this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder =>
-        builder.AddEndpointFilter<TBuilder, TenantResolutionFilter>();
+        builder.WithMetadata(new TenantRequiredMetadata());
+
+    /// <summary>Runs tenant resolution for endpoints marked with <see cref="RequireTenant{TBuilder}"/>. Place after authorization.</summary>
+    public static IApplicationBuilder UseTenantResolution(this IApplicationBuilder app) =>
+        app.UseMiddleware<TenantResolutionMiddleware>();
 }

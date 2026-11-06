@@ -12,6 +12,7 @@ public static class WebApplicationExtensions
         app.UseCors();
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseTenantResolution();
 
         app.MapHealthChecks("/health").AllowAnonymous();
 
@@ -25,6 +26,7 @@ public static class WebApplicationExtensions
         // Tenant-scoped API: every endpoint in this group has the tenant and user resolved from the Clerk token.
         // Modules map their endpoints onto it, e.g. api.MapCrmEndpoints();
         var api = app.MapGroup("/api").RequireTenant();
+        api.MapIdentityApi();
 
         return app;
     }

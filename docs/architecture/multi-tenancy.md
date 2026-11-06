@@ -8,7 +8,7 @@
 - `identity.tenants` and `identity.users` are global (no `tenant_id`, no RLS). `identity.tenant_memberships` is tenant-owned.
 
 ## Resolving the tenant
-- **Requests**: `/api/*` is a route group with `TenantResolutionFilter` (Identity.Endpoints). It reads the user (`sub`) and organization from the Clerk token (v2 `o` claim `{id, rol, slg}`, v1 `org_id`/`org_slug`), resolves or provisions tenant, user and membership, then sets the scoped `RequestContext` (`ITenantContext`, `ICurrentUser`).
+- **Requests**: `/api/*` is a route group marked with `RequireTenant()`; `TenantResolutionMiddleware` (Identity.Endpoints, after authorization) handles the marked endpoints. It is middleware, not an endpoint filter, because minimal APIs bind the body before filters run and field-level security needs the permissions during binding. It reads the user (`sub`) and organization from the Clerk token (v2 `o` claim `{id, rol, slg}`, v1 `org_id`/`org_slug`), resolves or provisions tenant, user and membership, then sets the scoped `RequestContext` (`ITenantContext`, `ICurrentUser`) and loads the user permissions ([security-and-permissions](security-and-permissions.md)).
   - No organization in the token → 403 `tenant.required`. Membership not `Active` → 403 `tenant.membership_inactive`.
   - Resolved sessions are cached in memory for 60 seconds (bounded cache).
 - **A scope belongs to one tenant**: setting a different tenant (or user) on the same scope throws.
@@ -30,7 +30,9 @@ Two paths converge on the same idempotent, race-safe code (`IdentityProvisioner`
 - Background jobs / outbox: tenant id carried on each message.
 - Platform admin: separate role/connection allowed to bypass — TODO design.
 
+- **Seeding**: the winner of the tenant insert also seeds the five default roles (unique tenant + name makes a repeat harmless), with the tenant context set first so stamping and RLS apply. New memberships get a default role, see [security-and-permissions](security-and-permissions.md). Session resolution self-heals: a tenant with no roles is seeded, and an active member with no role assignment gets the default role (covers a crash between the saves and tenants that predate RBAC).
+
 ## TODO
-- Seeding on tenant creation (roles, settings, picklists)
+- Seeding on tenant creation: settings, picklists
 - Tenant deletion and data export
 - Per-tenant limits (storage, users, integrations)

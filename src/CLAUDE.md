@@ -27,7 +27,7 @@ Modules: Identity/Tenancy, Crm (Companies, Contacts, Activities), Calendar, Sale
 ## Checklist for every new feature
 - [ ] Entity implements `ITenantEntity` (if tenant-owned) and has RLS policy in migration
 - [ ] Command/query has a validator
-- [ ] Endpoint declares required scope permission (`RequirePermission(Scope.X, Action.Y)`)
+- [ ] Endpoint declares required scope permission (`.RequirePermission(Scope.X, PermissionAction.Y)`)
 - [ ] Sensitive DTO properties tagged `[Sensitive(FieldGroup.Pricing|Financial|ContactPii)]`
 - [ ] Audit-worthy changes emit audit entries
 - [ ] Cross-module side effects go through integration events, not direct calls

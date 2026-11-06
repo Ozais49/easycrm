@@ -1,5 +1,7 @@
 using Cem.Identity.Application.Abstractions;
+using Cem.Identity.Infrastructure.Permissions;
 using Cem.Identity.Infrastructure.Persistence;
+using Cem.SharedKernel.Permissions;
 using Cem.Infrastructure.Common.Persistence;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +19,12 @@ public static class IdentityModule
         services.AddCemDbContext<IdentityDbContext>(connectionString, IdentityDbContext.SchemaName);
         services.AddScoped<IIdentityStore, IdentityStore>();
         services.AddScoped<IdentityProvisioner>();
+        services.AddScoped<IIdentityQueries, IdentityQueries>();
+
+        // One PermissionCache instance serves both reading (permission service) and invalidation (handlers).
+        services.AddScoped<PermissionCache>();
+        services.AddScoped<IPermissionCacheInvalidator>(sp => sp.GetRequiredService<PermissionCache>());
+        services.AddScoped<IPermissionService, PermissionService>();
         services.AddValidatorsFromAssemblyContaining<IdentityProvisioner>(ServiceLifetime.Singleton);
 
         return services;

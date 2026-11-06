@@ -8,7 +8,7 @@
 Every request needs a trusted tenant and user, backed by Postgres RLS ([ADR-0002](0002-shared-schema-tenancy-with-rls.md)). Clerk ([ADR-0003](0003-clerk-for-authentication.md)) is the source of truth for orgs and users, but webhooks are not reachable in local development and can arrive late or out of order.
 
 ## Decision
-- **Resolution**: an endpoint filter on the `/api` group reads the Clerk session token (`sub`, and the org from the v2 `o` claim or v1 `org_id`), resolves tenant, user and membership, and fills a scoped `RequestContext`. A scope can hold only one tenant and one user.
+- **Resolution**: middleware acting on the endpoints of the `/api` group (marked with metadata; it was first an endpoint filter, changed in [ADR-0016](0016-rbac-model.md) because filters run after body binding) reads the Clerk session token (`sub`, and the org from the v2 `o` claim or v1 `org_id`), resolves tenant, user and membership, and fills a scoped `RequestContext`. A scope can hold only one tenant and one user.
 - **Provisioning**: just-in-time from the token, plus Clerk webhooks (Svix-signed, verified manually) that fill in real details and handle deletions. Both use the same find-or-insert code that survives concurrent inserts via the unique indexes.
 - **RLS**: the tenant id is passed to Postgres with `set_config('app.tenant_id', ..., false)` on every connection open (pooling). Policies use `NULLIF(current_setting('app.tenant_id', true), '')::uuid`, so an unset value matches no rows instead of erroring or matching all.
 - **Roles**: migrations run as an owner role; the app uses a non-owner role without `BYPASSRLS`.

@@ -25,7 +25,7 @@ public sealed class ClerkWebhookDispatcher(ISender sender)
                 new UpsertTenantCommand(o.Id!, o.Name ?? o.Slug ?? o.Id!, o.Slug ?? o.Id!), cancellationToken),
             "organization.deleted" => Send(envelope, (ClerkOrganizationData o) => new DeleteTenantCommand(o.Id!), cancellationToken),
             "organizationMembership.created" or "organizationMembership.updated" => Send(envelope, (ClerkMembershipData m) =>
-                new UpsertMembershipCommand(m.Organization?.Id!, m.PublicUserData?.UserId!, m.Id!), cancellationToken),
+                new UpsertMembershipCommand(m.Organization?.Id!, m.PublicUserData?.UserId!, m.Id!, m.Role == "org:admin"), cancellationToken),
             "organizationMembership.deleted" => Send(envelope, (ClerkMembershipData m) =>
                 new RemoveMembershipCommand(m.Organization?.Id!, m.PublicUserData?.UserId!), cancellationToken),
             _ => ValueTask.FromResult(Result.Success())

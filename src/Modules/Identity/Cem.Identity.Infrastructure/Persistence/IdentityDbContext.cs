@@ -5,8 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cem.Identity.Infrastructure.Persistence;
 
-public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> options, ITenantContext tenantContext)
-    : CemDbContextBase(options, tenantContext)
+public sealed class IdentityDbContext(
+    DbContextOptions<IdentityDbContext> options,
+    ITenantContext tenantContext,
+    TimeProvider timeProvider) : CemDbContextBase(options, tenantContext, timeProvider)
 {
     public const string SchemaName = "identity";
 
@@ -15,6 +17,10 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<User> Users => Set<User>();
     public DbSet<TenantMembership> TenantMemberships => Set<TenantMembership>();
+    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<MembershipRole> MembershipRoles => Set<MembershipRole>();
+    public DbSet<Team> Teams => Set<Team>();
+    public DbSet<TeamMember> TeamMembers => Set<TeamMember>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -12,7 +12,7 @@ Modules write integration events to an `outbox_messages` table in the same trans
 ## Consequences
 - + Loose coupling, at-least-once delivery, survives restarts
 - − Eventual consistency between modules; must design idempotent handlers
-- Follow-up: dispatcher implementation, retry/poison handling, tenant id on each message
+- Follow-up: dispatcher implementation, retry/poison handling, tenant id on each message — done in [ADR-0017](0017-audit-log-and-outbox.md)
 
 ## Alternatives considered
 - Direct calls via module Contracts — simpler, tighter coupling (still allowed for read queries)

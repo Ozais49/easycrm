@@ -21,10 +21,14 @@
 ## Confirmation
 - Destructive actions name the object: "Delete 'Wedding shoot – Sita'?"
 
-## Glossary (TODO)
+## Glossary
 | Term | Meaning |
 |---|---|
 | Company (placeholder) | A client organization the tenant works with |
 | Deal | A potential sale in the pipeline |
 | Deliverable | A piece of work owed to a client |
 | Portfolio item | A showcased past project |
+| Member | A person in your organization (not "user") |
+| Role | A named set of permissions that can be given to members |
+| Team | A group of members that records can be shared with |
+| Organization | The workspace a team works in (shown in the org switcher) |

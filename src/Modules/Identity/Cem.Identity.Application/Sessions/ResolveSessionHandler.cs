@@ -21,7 +21,7 @@ public sealed class ResolveSessionHandler(IdentityProvisioner provisioner)
             return Result<SessionInfo>.Failure(Error.Forbidden("user.not_found", "This user is no longer active."));
         }
 
-        var membership = await provisioner.EnsureMembershipAsync(tenant, user, cancellationToken);
+        var membership = await provisioner.EnsureMembershipAsync(tenant, user, command.IsOrgAdmin, cancellationToken);
         if (!membership.IsActive)
         {
             return Result<SessionInfo>.Failure(Error.Forbidden("tenant.membership_inactive", "Your membership of this organization is not active."));

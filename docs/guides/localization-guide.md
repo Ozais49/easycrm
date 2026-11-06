@@ -4,13 +4,13 @@
 
 ## Dates — AD + Bikram Sambat
 - Storage: always UTC (`timestamptz`) / AD dates (`date`)
-- Display: AD, BS, or both — per tenant default + user preference (TODO)
+- Display: AD, BS, or both — a tenant setting (`Ad | Bs | Both`, default `Both`, `GET/PUT /api/settings`); per-user override TODO
 - Conversion in one place: `lib/date` (frontend) and a backend helper for PDFs/exports
 - BS date picker component (`BsDatePicker`); library TODO (evaluate `nepali-date-converter` / `nepali-datepicker`) with bounded year range
 - Calendar views can show BS month grid — TODO decide scope
 
 ## Time zones
-- Tenant time zone setting (default `Asia/Kathmandu`, UTC+5:45); user override TODO
+- Tenant time zone setting (IANA id, default `Asia/Kathmandu`, UTC+5:45; `GET/PUT /api/settings`); user override TODO
 
 ## Currency
 - **Single currency: NPR** (resolved). No multi-currency, no exchange rates.

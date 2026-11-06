@@ -1,3 +1,4 @@
+using Cem.Infrastructure.Common.Auditing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -20,13 +21,17 @@ public static class ServiceCollectionExtensions
         where TContext : CemDbContextBase
     {
         // Scoped: the interceptors read the scoped tenant/user context.
+        services.TryAddScoped<AuditInterceptor>();
         services.TryAddScoped<AuditableEntityInterceptor>();
         services.TryAddScoped<TenantStampInterceptor>();
         services.TryAddScoped<TenantSessionConnectionInterceptor>();
 
         services.AddDbContext<TContext>((serviceProvider, options) => options
             .UseCemNpgsql(connectionString, schema)
+            // Interceptors run in the order given. Audit must come before the tenant stamp: the audit entries it adds
+            // are tenant entities and get their TenantId from the stamp that follows.
             .AddInterceptors(
+                serviceProvider.GetRequiredService<AuditInterceptor>(),
                 serviceProvider.GetRequiredService<AuditableEntityInterceptor>(),
                 serviceProvider.GetRequiredService<TenantStampInterceptor>(),
                 serviceProvider.GetRequiredService<TenantSessionConnectionInterceptor>()));

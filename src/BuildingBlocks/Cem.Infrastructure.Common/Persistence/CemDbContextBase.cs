@@ -1,5 +1,8 @@
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.Json;
+using Cem.Infrastructure.Common.Auditing;
+using Cem.Infrastructure.Common.Outbox;
 using Cem.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -8,10 +11,15 @@ namespace Cem.Infrastructure.Common.Persistence;
 
 /// <summary>
 /// Base for every module DbContext: one schema per module, soft-delete filter on <see cref="ISoftDeletable"/>,
-/// tenant filter on <see cref="ITenantEntity"/>.
+/// tenant filter on <see cref="ITenantEntity"/>. Also maps the shared platform tables (audit log, outbox) so a
+/// module writes them in its own SaveChanges transaction; only the platform context migrates them.
 /// </summary>
-public abstract class CemDbContextBase(DbContextOptions options, ITenantContext tenantContext) : DbContext(options)
+public abstract class CemDbContextBase(DbContextOptions options, ITenantContext tenantContext, TimeProvider timeProvider)
+    : DbContext(options)
 {
+    /// <summary>Postgres schema of the tables shared by all modules (audit log, outbox).</summary>
+    public const string PlatformSchema = "platform";
+
     public const string SoftDeleteFilterName = "SoftDelete";
     public const string TenantFilterName = "Tenant";
 
@@ -27,9 +35,26 @@ public abstract class CemDbContextBase(DbContextOptions options, ITenantContext 
     /// </summary>
     private Guid TenantFilterId => tenantContext.TenantId ?? Guid.Empty;
 
+    /// <summary>True only for the platform context, which creates the platform tables in its migrations.</summary>
+    protected virtual bool OwnsPlatformTables => false;
+
+    /// <summary>
+    /// Queues an integration event. It is written by the next SaveChanges, in the same transaction as the state
+    /// change, and delivered later by the outbox dispatcher. The message carries the current tenant, if any.
+    /// </summary>
+    public void AddIntegrationEvent<TEvent>(TEvent integrationEvent)
+        where TEvent : IIntegrationEvent =>
+        Set<OutboxMessage>().Add(OutboxMessage.Create(
+            tenantContext.TenantId,
+            TEvent.EventType,
+            JsonSerializer.Serialize(integrationEvent, IntegrationEventJson.Options),
+            timeProvider.GetUtcNow()));
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(Schema);
+        modelBuilder.ApplyConfiguration(new AuditEntryConfiguration(OwnsPlatformTables));
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration(OwnsPlatformTables));
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {

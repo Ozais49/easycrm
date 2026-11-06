@@ -14,4 +14,10 @@
     <Project Path="src/Modules/Identity/Cem.Identity.Endpoints/Cem.Identity.Endpoints.csproj" />
     <Project Path="src/Modules/Identity/Cem.Identity.Infrastructure/Cem.Identity.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Settings/">
+    <Project Path="src/Modules/Settings/Cem.Settings.Application/Cem.Settings.Application.csproj" />
+    <Project Path="src/Modules/Settings/Cem.Settings.Domain/Cem.Settings.Domain.csproj" />
+    <Project Path="src/Modules/Settings/Cem.Settings.Endpoints/Cem.Settings.Endpoints.csproj" />
+    <Project Path="src/Modules/Settings/Cem.Settings.Infrastructure/Cem.Settings.Infrastructure.csproj" />
+  </Folder>
 </Solution>

@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Cem.Settings.Application\Cem.Settings.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Cem.Infrastructure.Common\Cem.Infrastructure.Common.csproj" />
+  </ItemGroup>
+</Project>

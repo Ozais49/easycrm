@@ -5,7 +5,7 @@
 | Module | Owns | Publishes (events) | Consumes |
 |---|---|---|---|
 | Identity/Tenancy | Tenant, User, Membership, Role, Team | TenantCreated, UserJoined | Clerk webhooks |
-| Settings | Picklists, tax rates, branding, custom field definitions | SettingsChanged | — |
+| Settings | Tenant settings (time zone, date display, brand color); later picklists, tax rates, custom field definitions | SettingsChanged | TenantCreated (creates default settings) |
 | Crm | Company, Contact, Note, Activity, Tag | ContactCreated | LeadConverted |
 | Calendar | Event (+ `is_public`), Attendee, Reminder, WorkingHours, Availability (computed) | — | DeliverableDueDateChanged |
 | Sales | Lead, Deal, Product, Quote, Invoice | DealWon, LeadConverted | ContactCreated, LeadCaptured |

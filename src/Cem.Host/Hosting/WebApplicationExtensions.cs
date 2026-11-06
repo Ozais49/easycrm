@@ -1,6 +1,7 @@
 using Cem.Identity.Endpoints;
 using Cem.Identity.Endpoints.Tenancy;
 using Cem.Platform;
+using Cem.Settings.Endpoints;
 
 namespace Cem.Host.Hosting;
 
@@ -29,6 +30,7 @@ public static class WebApplicationExtensions
         var api = app.MapGroup("/api").RequireTenant();
         api.MapIdentityApi();
         api.MapPlatformApi();
+        api.MapSettingsApi();
 
         return app;
     }

@@ -7,6 +7,7 @@ using Cem.Infrastructure.Common.Authorization;
 using Cem.Infrastructure.Common.Behaviors;
 using Cem.Infrastructure.Common.Tenancy;
 using Cem.Platform;
+using Cem.Settings.Infrastructure;
 
 namespace Cem.Host.Hosting;
 
@@ -51,6 +52,7 @@ public static class WebApplicationBuilderExtensions
         services.AddPlatform(builder.Configuration);
         services.AddIdentityModule(builder.Configuration);
         services.AddIdentityEndpoints();
+        services.AddSettingsModule(builder.Configuration);
 
         return builder;
     }

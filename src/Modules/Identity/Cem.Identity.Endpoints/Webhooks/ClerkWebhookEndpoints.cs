@@ -18,6 +18,7 @@ public static class ClerkWebhookEndpoints
         // Svix payloads are small; cap the body so an oversized request is rejected before it is read.
         app.MapPost("/webhooks/clerk", HandleAsync)
             .AllowAnonymous()
+            .ExcludeFromDescription()
             .WithMetadata(new RequestSizeLimitAttribute(256 * 1024));
         return app;
     }

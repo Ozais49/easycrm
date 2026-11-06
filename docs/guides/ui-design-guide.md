@@ -27,8 +27,8 @@
 | xl | 1280px | Wider content, multi-column dashboards |
 
 ## App shell
-- Desktop: left sidebar (modules by permission), top bar (global search, quick create, notifications, org switcher, user menu)
-- Mobile: top bar + bottom tabs (Home, Calendar, Inbox, Portfolio, More)
+- Desktop: left sidebar (modules by permission), top bar (org switcher, theme toggle, user menu today; global search, quick create and notifications are added when they exist)
+- Mobile: top bar + bottom tabs, only for features that exist (today Home and Settings; Calendar, Inbox, Portfolio join as they ship)
 
 ## Layout patterns
 - **List view**: search, filters, saved views, sortable table (md+) / card list (base), bulk actions, empty state
@@ -39,7 +39,7 @@
 - **Forms**: single column on mobile, two columns on lg+; inline validation; sticky save bar
 
 ## Design tokens
-- Color: `--background`, `--foreground`, `--primary`, `--muted`, `--accent`, `--destructive`, `--border`, status colors — values taken from Spectrum's color system (mapped when `web/` is scaffolded)
+- Color: `--background`, `--foreground`, `--primary`, `--muted`, `--accent`, `--destructive`, `--border`, status colors — values from Spectrum's color system, defined in `web/src/styles/tokens.css`. **Approximations:** the gray scale and the blue / green / orange / red steps are from memory of Spectrum's published hex values, not an export; the accent and status steps were nudged for WCAG AA contrast (e.g. blue-800 `#0d66d0` as light primary, green-1000 for positive). Verify against spectrum.adobe.com before relying on exact values
 - Every token defined for **light and dark** themes; theme = system preference with user toggle (persisted)
 - Never hard-code colors — brand change must be a token-only change
 - Tenant branding overrides `--primary` (+ logo)
@@ -54,8 +54,11 @@
 ## Components inventory (planned)
 DataTable, RecordCard, RecordDetail, StreamPanel, Kanban, FilterBar, BsDatePicker, MoneyField (permission-aware), MediaUploader, Gallery, Lightbox, EmptyState, ConfirmDialog, PermissionGate
 
+## Iconography
+- **lucide-react** (decided). 16px in controls, 20px in the bottom tabs; decorative icons carry no label, icon-only buttons need `aria-label`.
+
 ## Accessibility
 - WCAG 2.2 AA contrast, keyboard navigable, visible focus, labels on all inputs, touch targets ≥ 44px
 
 ## TODO
-- Mood board / references, logo, iconography (lucide assumed), motion guidelines
+- Mood board / references, logo, motion guidelines

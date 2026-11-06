@@ -7,6 +7,7 @@ using Cem.Infrastructure.Common.Authorization;
 using Cem.Infrastructure.Common.Behaviors;
 using Cem.Infrastructure.Common.Tenancy;
 using Cem.Platform;
+using Cem.Settings.Infrastructure;
 
 namespace Cem.Host.Hosting;
 
@@ -39,6 +40,8 @@ public static class WebApplicationBuilderExtensions
         {
             json.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
             json.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+            // Keeps the API contract and the generated client types exact (numbers stay numbers).
+            json.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
         });
         services.AddSensitiveFieldSecurity();
 
@@ -51,6 +54,7 @@ public static class WebApplicationBuilderExtensions
         services.AddPlatform(builder.Configuration);
         services.AddIdentityModule(builder.Configuration);
         services.AddIdentityEndpoints();
+        services.AddSettingsModule(builder.Configuration);
 
         return builder;
     }

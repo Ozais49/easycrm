@@ -1,8 +1,10 @@
 using Cem.Infrastructure.Common.Authorization;
 using Cem.Infrastructure.Common.Http;
+using Cem.SharedKernel;
 using Cem.SharedKernel.Permissions;
 using Mediator;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
 namespace Cem.Platform.Auditing;
@@ -21,7 +23,9 @@ public static class AuditLogEndpoints
                 int page = 1,
                 int pageSize = 25) =>
                 (await sender.Send(new ListAuditLogQuery(entityType, entityId, userId, page, pageSize), cancellationToken)).ToHttpResult())
-            .RequirePermission(Scope.Settings, PermissionAction.Read);
+            .RequirePermission(Scope.Settings, PermissionAction.Read)
+            .WithName("ListAuditLog")
+            .Produces<PagedResult<AuditEntryDto>>();
 
         return api;
     }

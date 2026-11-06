@@ -1,0 +1,6 @@
+dist
+node_modules
+src/lib/api/generated
+openapi
+package-lock.json
+CLAUDE.md

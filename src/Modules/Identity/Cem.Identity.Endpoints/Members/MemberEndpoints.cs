@@ -1,9 +1,11 @@
 using Cem.Identity.Application.Members;
 using Cem.Infrastructure.Common.Authorization;
 using Cem.Infrastructure.Common.Http;
+using Cem.SharedKernel;
 using Cem.SharedKernel.Permissions;
 using Mediator;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
 namespace Cem.Identity.Endpoints.Members;
@@ -16,12 +18,19 @@ public static class MemberEndpoints
 
         members.MapGet("/", async (ISender sender, CancellationToken cancellationToken, int page = 1, int pageSize = 25) =>
                 (await sender.Send(new ListMembersQuery(page, pageSize), cancellationToken)).ToHttpResult())
-            .RequirePermission(Scope.Settings, PermissionAction.Read);
+            .RequirePermission(Scope.Settings, PermissionAction.Read)
+            .WithName("ListMembers")
+            .Produces<PagedResult<MemberDto>>();
 
         members.MapPut("/{membershipId:guid}/roles", async (
                 Guid membershipId, SetMemberRolesRequest request, ISender sender, CancellationToken cancellationToken) =>
                 (await sender.Send(new SetMemberRolesCommand(membershipId, request.RoleIds), cancellationToken)).ToHttpResult())
-            .RequirePermission(Scope.Settings, PermissionAction.Edit);
+            .RequirePermission(Scope.Settings, PermissionAction.Edit)
+            .WithName("SetMemberRoles")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         return api;
     }

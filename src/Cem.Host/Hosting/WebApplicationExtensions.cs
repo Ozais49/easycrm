@@ -27,7 +27,9 @@ public static class WebApplicationExtensions
 
         // Tenant-scoped API: every endpoint in this group has the tenant and user resolved from the Clerk token.
         // Modules map their endpoints onto it, e.g. api.MapCrmEndpoints();
-        var api = app.MapGroup("/api").RequireTenant();
+        var api = app.MapGroup("/api").RequireTenant()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
         api.MapIdentityApi();
         api.MapPlatformApi();
         api.MapSettingsApi();

@@ -4,6 +4,7 @@ using Cem.Settings.Application.Tenant;
 using Cem.SharedKernel.Permissions;
 using Mediator;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
 namespace Cem.Settings.Endpoints.Tenant;
@@ -16,13 +17,18 @@ public static class TenantSettingsEndpoints
 
         // Open to every member: the UI needs the time zone, date display and brand color everywhere.
         settings.MapGet("/", async (ISender sender, CancellationToken cancellationToken) =>
-            (await sender.Send(new GetTenantSettingsQuery(), cancellationToken)).ToHttpResult());
+            (await sender.Send(new GetTenantSettingsQuery(), cancellationToken)).ToHttpResult())
+            .WithName("GetTenantSettings")
+            .Produces<TenantSettingsDto>();
 
         settings.MapPut("/", async (TenantSettingsRequest request, ISender sender, CancellationToken cancellationToken) =>
                 (await sender.Send(
                     new UpdateTenantSettingsCommand(request.TimeZone, request.DateDisplay, request.BrandColor),
                     cancellationToken)).ToHttpResult())
-            .RequirePermission(Scope.Settings, PermissionAction.Edit);
+            .RequirePermission(Scope.Settings, PermissionAction.Edit)
+            .WithName("UpdateTenantSettings")
+            .Produces<TenantSettingsDto>()
+            .ProducesValidationProblem();
 
         return api;
     }

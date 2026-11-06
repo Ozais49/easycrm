@@ -1,3 +1,6 @@
+using Cem.Identity.Endpoints;
+using Cem.Identity.Endpoints.Tenancy;
+
 namespace Cem.Host.Hosting;
 
 public static class WebApplicationExtensions
@@ -7,15 +10,21 @@ public static class WebApplicationExtensions
         app.UseExceptionHandler();
         app.UseStatusCodePages();
         app.UseCors();
+        app.UseAuthentication();
+        app.UseAuthorization();
 
-        app.MapHealthChecks("/health");
+        app.MapHealthChecks("/health").AllowAnonymous();
 
         if (app.Environment.IsDevelopment())
         {
-            app.MapOpenApi();
+            app.MapOpenApi().AllowAnonymous();
         }
 
-        // Modules map their endpoint groups here, e.g. app.MapCrmEndpoints();
+        app.MapIdentityEndpoints();
+
+        // Tenant-scoped API: every endpoint in this group has the tenant and user resolved from the Clerk token.
+        // Modules map their endpoints onto it, e.g. api.MapCrmEndpoints();
+        var api = app.MapGroup("/api").RequireTenant();
 
         return app;
     }

@@ -6,4 +6,10 @@
     <Project Path="src/BuildingBlocks/Cem.Infrastructure.Common/Cem.Infrastructure.Common.csproj" />
     <Project Path="src/BuildingBlocks/Cem.SharedKernel/Cem.SharedKernel.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Identity/">
+    <Project Path="src/Modules/Identity/Cem.Identity.Application/Cem.Identity.Application.csproj" />
+    <Project Path="src/Modules/Identity/Cem.Identity.Domain/Cem.Identity.Domain.csproj" />
+    <Project Path="src/Modules/Identity/Cem.Identity.Endpoints/Cem.Identity.Endpoints.csproj" />
+    <Project Path="src/Modules/Identity/Cem.Identity.Infrastructure/Cem.Identity.Infrastructure.csproj" />
+  </Folder>
 </Solution>

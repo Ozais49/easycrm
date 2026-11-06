@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Cem.Identity.Domain\Cem.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Cem.SharedKernel\Cem.SharedKernel.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="Mediator.Abstractions" />
+  </ItemGroup>
+</Project>

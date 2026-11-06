@@ -16,6 +16,7 @@ Feature done → manual verification → deploy → status/feedback recorded ([A
 
 ## Environments
 - local, production; staging TODO
+- Database roles and schemas: one-time [init-roles.sql](../../deploy/sql/init-roles.sql); see [multi-tenancy](multi-tenancy.md)
 
 ## TODO
 - OS hardening, swap file, systemd vs Docker, CI/CD via GitHub Actions (build + deploy only), secrets, backups (pg_dump → R2), monitoring, TLS/domain, migrations on deploy

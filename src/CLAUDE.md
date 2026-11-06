@@ -7,8 +7,8 @@
 src/
   Cem.Host/                      # ASP.NET Core host, DI wiring, middleware, OpenAPI
   BuildingBlocks/
-    Cem.SharedKernel/            # Entity base, ITenantEntity, Result, errors, permission primitives
-    Cem.Infrastructure.Common/   # EF base context, outbox, tenancy, Clerk auth, storage
+    Cem.SharedKernel/            # Entity base, ITenantEntity, ITenantContext/ICurrentUser, Result, errors, permission primitives
+    Cem.Infrastructure.Common/   # EF base context + interceptors, RequestContext (tenancy), Clerk auth, RLS helpers; later outbox, storage
   Modules/
     <Module>/
       <Module>.Domain/           # entities, value objects, domain events — no EF, no ASP.NET
@@ -20,7 +20,8 @@ src/
 Modules: Identity/Tenancy, Crm (Companies, Contacts, Activities), Calendar, Sales, Projects (Deliverables), Portfolio, Inbox, Settings. See [modules.md](../docs/architecture/modules.md).
 
 ## Layering rules
-- Domain → nothing. Application → Domain + SharedKernel. Infrastructure → Application. Endpoints → Application.
+- Domain → SharedKernel. Application → Domain + SharedKernel. Infrastructure → Application + Infrastructure.Common. Endpoints → Application + Infrastructure.Common (HTTP helpers). Host → Infrastructure + Endpoints.
+- Application reads the tenant/user via `ITenantContext` / `ICurrentUser` (SharedKernel); only identity resolution uses `IRequestContextSetter`.
 - Cross-module: only `*.Contracts` or integration events (outbox). Enforced by code review (no automated tests for now — ADR-0010).
 
 ## Checklist for every new feature
@@ -43,4 +44,5 @@ dotnet run --project src/Cem.Host        # http://localhost:5080  (/health, /ope
 dotnet ef migrations add <Name> --project src/Modules/<Module>/<Module>.Infrastructure --startup-project src/Cem.Host --context <Module>DbContext
 dotnet ef database update --project src/Modules/<Module>/<Module>.Infrastructure --startup-project src/Cem.Host --context <Module>DbContext
 ```
+Tenant tables: call `migrationBuilder.EnableTenantRls(schema, table)` in the migration. Apply migrations as `cem_owner` (`--connection`), run the app as `cem_app` ([deploy/sql/init-roles.sql](../deploy/sql/init-roles.sql)).
 Deploy: TODO.

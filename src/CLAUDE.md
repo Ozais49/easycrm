@@ -8,7 +8,8 @@ src/
   Cem.Host/                      # ASP.NET Core host, DI wiring, middleware, OpenAPI
   BuildingBlocks/
     Cem.SharedKernel/            # Entity base, ITenantEntity, ITenantContext/ICurrentUser, Result, errors, permission primitives
-    Cem.Infrastructure.Common/   # EF base context + interceptors, RequestContext (tenancy), Clerk auth, RLS helpers; later outbox, storage
+    Cem.Infrastructure.Common/   # EF base context + interceptors (tenant, audit), RequestContext (tenancy), Clerk auth, RLS helpers, audit/outbox entities; later storage
+    Cem.Platform/                # platform schema: PlatformDbContext (audit + outbox migrations), outbox dispatcher, GET /api/audit-log
   Modules/
     <Module>/
       <Module>.Domain/           # entities, value objects, domain events — no EF, no ASP.NET
@@ -29,8 +30,8 @@ Modules: Identity/Tenancy, Crm (Companies, Contacts, Activities), Calendar, Sale
 - [ ] Command/query has a validator
 - [ ] Endpoint declares required scope permission (`.RequirePermission(Scope.X, PermissionAction.Y)`)
 - [ ] Sensitive DTO properties tagged `[Sensitive(FieldGroup.Pricing|Financial|ContactPii)]`
-- [ ] Audit-worthy changes emit audit entries
-- [ ] Cross-module side effects go through integration events, not direct calls
+- [ ] Audit is automatic for tenant entities; tag audit-sensitive entity properties `[Sensitive]` so values are redacted
+- [ ] Cross-module side effects go through integration events (declared in `*.Contracts`, published via the store port, e.g. `IIdentityStore.Publish`; handlers idempotent), not direct calls
 - [ ] Manual self-check per [testing-guide](../docs/guides/testing-guide.md) (no automated tests for now)
 - [ ] No new heavy dependency; memory impact noted in PR (ADR-0009)
 - [ ] Reads use `AsNoTracking` + projections; lists paginated; no unbounded queries

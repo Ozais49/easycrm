@@ -1,5 +1,6 @@
 using Cem.Identity.Endpoints;
 using Cem.Identity.Endpoints.Tenancy;
+using Cem.Platform;
 
 namespace Cem.Host.Hosting;
 
@@ -27,6 +28,7 @@ public static class WebApplicationExtensions
         // Modules map their endpoints onto it, e.g. api.MapCrmEndpoints();
         var api = app.MapGroup("/api").RequireTenant();
         api.MapIdentityApi();
+        api.MapPlatformApi();
 
         return app;
     }

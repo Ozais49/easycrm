@@ -1,3 +1,4 @@
+using Cem.Identity.Contracts;
 using Cem.Identity.Domain;
 using Cem.SharedKernel;
 
@@ -17,7 +18,8 @@ public sealed class IdentityProvisioner(IIdentityStore store, IRequestContextSet
             () => store.FindTenantAsync(clerkOrgId, cancellationToken),
             // Name and slug are placeholders until the organization webhook delivers the real ones.
             () => Tenant.Create(clerkOrgId, name: slug ?? clerkOrgId, slug: slug ?? clerkOrgId),
-            tenant =>
+            tenant => store.Publish(new TenantCreated(tenant.Id, tenant.Name)),
+            afterCreated: tenant =>
             {
                 requestContext.SetTenant(tenant.Id);
                 return SeedRolesAsync(cancellationToken);
@@ -29,6 +31,7 @@ public sealed class IdentityProvisioner(IIdentityStore store, IRequestContextSet
         EnsureAsync(
             () => store.FindUserAsync(clerkUserId, cancellationToken),
             () => User.Create(clerkUserId),
+            onCreating: null,
             afterCreated: null,
             cancellationToken);
 
@@ -51,6 +54,7 @@ public sealed class IdentityProvisioner(IIdentityStore store, IRequestContextSet
         var membership = await EnsureAsync(
             () => store.FindMembershipAsync(user.Id, cancellationToken),
             () => TenantMembership.Create(user.Id, timeProvider.GetUtcNow()),
+            created => store.Publish(new UserJoined(tenant.Id, user.Id, created.Id)),
             afterCreated: null,
             cancellationToken)
             ?? throw new InvalidOperationException("Membership could not be created or loaded.");
@@ -101,9 +105,11 @@ public sealed class IdentityProvisioner(IIdentityStore store, IRequestContextSet
         await store.TrySaveNewAsync(cancellationToken);
     }
 
+    /// <param name="onCreating">Runs before the save, so what it queues (the integration event) is written with the new row and dropped with it if the insert loses a race.</param>
     private async Task<T?> EnsureAsync<T>(
         Func<Task<T?>> find,
         Func<T> create,
+        Action<T>? onCreating,
         Func<T, Task>? afterCreated,
         CancellationToken cancellationToken)
         where T : Entity
@@ -116,6 +122,7 @@ public sealed class IdentityProvisioner(IIdentityStore store, IRequestContextSet
 
         var created = create();
         store.Add(created);
+        onCreating?.Invoke(created);
 
         if (!await store.TrySaveNewAsync(cancellationToken))
         {

@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <ProjectReference Include="..\Cem.Identity.Contracts\Cem.Identity.Contracts.csproj" />
     <ProjectReference Include="..\Cem.Identity.Domain\Cem.Identity.Domain.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Cem.SharedKernel\Cem.SharedKernel.csproj" />
   </ItemGroup>

@@ -18,3 +18,11 @@
 - Other modules access data only via `<Module>.Contracts` (query interfaces + event types) or integration events.
 - Events go through the outbox — [ADR-0005](../adr/0005-integration-events-outbox.md).
 - One Postgres schema per module (e.g. `crm.contacts`) — confirmed, see [ADR-0014](../adr/0014-backend-conventions.md).
+
+## Platform building block
+`Cem.Platform` (not a module) owns the `platform` schema: `platform.audit_entries` and `platform.outbox_messages`, their migrations (`PlatformDbContext`), the outbox dispatcher and `GET /api/audit-log`. Every module context maps both tables (through `CemDbContextBase`) and writes them in its own transaction. See [ADR-0017](../adr/0017-audit-log-and-outbox.md).
+
+## Integration events
+- Declared as records in `<Module>.Contracts` implementing `IIntegrationEvent` with a stable `EventType` (`identity.tenant_created`, `identity.user_joined`).
+- Published through the module's store port (`IIdentityStore.Publish`), written with the state change. Subscribed with `services.AddIntegrationEventHandler<TEvent, THandler>()`; handlers implement `IIntegrationEventHandler<TEvent>` and **must be idempotent** (at-least-once delivery).
+- Implemented today: `TenantCreated`, `UserJoined` (no subscribers yet). The other events in the table above are still planned.

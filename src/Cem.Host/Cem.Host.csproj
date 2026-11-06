@@ -11,6 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BuildingBlocks\Cem.Infrastructure.Common\Cem.Infrastructure.Common.csproj" />
+    <ProjectReference Include="..\BuildingBlocks\Cem.Platform\Cem.Platform.csproj" />
     <ProjectReference Include="..\BuildingBlocks\Cem.SharedKernel\Cem.SharedKernel.csproj" />
     <ProjectReference Include="..\Modules\Identity\Cem.Identity.Endpoints\Cem.Identity.Endpoints.csproj" />
     <ProjectReference Include="..\Modules\Identity\Cem.Identity.Infrastructure\Cem.Identity.Infrastructure.csproj" />

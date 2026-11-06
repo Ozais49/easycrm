@@ -6,6 +6,7 @@ using Cem.Infrastructure.Common.Auth;
 using Cem.Infrastructure.Common.Authorization;
 using Cem.Infrastructure.Common.Behaviors;
 using Cem.Infrastructure.Common.Tenancy;
+using Cem.Platform;
 
 namespace Cem.Host.Hosting;
 
@@ -47,6 +48,7 @@ public static class WebApplicationBuilderExtensions
             options.PipelineBehaviors = [typeof(ValidationBehavior<,>)];
         });
 
+        services.AddPlatform(builder.Configuration);
         services.AddIdentityModule(builder.Configuration);
         services.AddIdentityEndpoints();
 

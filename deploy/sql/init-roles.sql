@@ -13,3 +13,9 @@ CREATE SCHEMA identity AUTHORIZATION cem_owner;
 GRANT USAGE ON SCHEMA identity TO cem_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE cem_owner IN SCHEMA identity
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO cem_app;
+
+-- Shared tables of the platform building block (audit log, outbox).
+CREATE SCHEMA platform AUTHORIZATION cem_owner;
+GRANT USAGE ON SCHEMA platform TO cem_app;
+ALTER DEFAULT PRIVILEGES FOR ROLE cem_owner IN SCHEMA platform
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO cem_app;

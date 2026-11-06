@@ -1,0 +1,71 @@
+/*
+ * Design tokens (ADR-0012): shadcn variable names, values from Adobe Spectrum's color system
+ * (https://spectrum.adobe.com/page/color-system/). Spectrum publishes no CSS for non-Adobe products, so the
+ * gray scale and the blue/green/orange/red steps below are APPROXIMATIONS from memory of Spectrum's published
+ * hex values, not an export. Accent and status steps were also nudged so text on them meets WCAG AA (4.5:1).
+ * Check against spectrum.adobe.com before relying on exact values. Components never hard-code colors.
+ * The tenant brand color overrides --primary / --primary-foreground at runtime (lib/brand.ts).
+ */
+:root {
+  --background: #ffffff; /* gray-50 */
+  --foreground: #2c2c2c; /* gray-900 */
+  --card: #ffffff;
+  --card-foreground: #2c2c2c;
+  --popover: #ffffff;
+  --popover-foreground: #2c2c2c;
+  --primary: #0d66d0; /* blue-800 */
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5; /* gray-100 */
+  --secondary-foreground: #2c2c2c;
+  --muted: #f5f5f5; /* gray-100 */
+  --muted-foreground: #6e6e6e; /* gray-700 */
+  --accent: #eaeaea; /* gray-200 */
+  --accent-foreground: #2c2c2c;
+  --destructive: #d31510; /* red-900 */
+  --destructive-foreground: #ffffff;
+  --border: #e1e1e1; /* gray-300 */
+  --input: #b3b3b3; /* gray-500 */
+  --ring: #2680eb; /* blue-600 */
+  --sidebar: #fafafa; /* gray-75 */
+
+  --informative: #0d66d0;
+  --informative-foreground: #ffffff;
+  --positive: #12805c; /* green-1000 */
+  --positive-foreground: #ffffff;
+  --notice: #e68619; /* orange-900 */
+  --notice-foreground: #000000;
+  --negative: #d31510;
+  --negative-foreground: #ffffff;
+}
+
+.dark {
+  --background: #252525; /* gray-50 (dark) */
+  --foreground: #f1f1f1;
+  --card: #2f2f2f; /* gray-75 */
+  --card-foreground: #f1f1f1;
+  --popover: #2f2f2f;
+  --popover-foreground: #f1f1f1;
+  --primary: #1473e6; /* blue-700 */
+  --primary-foreground: #ffffff;
+  --secondary: #323232; /* gray-100 */
+  --secondary-foreground: #f1f1f1;
+  --muted: #323232;
+  --muted-foreground: #a3a3a3;
+  --accent: #3e3e3e; /* gray-200 */
+  --accent-foreground: #f1f1f1;
+  --destructive: #ec5b62; /* red-700 */
+  --destructive-foreground: #000000;
+  --border: #4a4a4a; /* gray-300 */
+  --input: #6e6e6e; /* gray-500 */
+  --ring: #4b9cf5; /* blue-500 */
+  --sidebar: #1d1d1d;
+
+  --informative: #4b9cf5;
+  --informative-foreground: #000000;
+  --positive: #2d9d78; /* green-900 */
+  --positive-foreground: #000000;
+  --notice: #e68619;
+  --notice-foreground: #000000;
+  --negative: #ec5b62;
+  --negative-foreground: #000000;
+}

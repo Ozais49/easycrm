@@ -31,7 +31,11 @@ Applied once, when the membership is created (JIT or webhook); later changes by 
 - Exports, PDFs, search results, dashboards and notifications must apply the same rules.
 
 ## Audit
-- Audit log for create/update/delete of business entities; always for sensitive-field, role and permission changes.
+- `AuditInterceptor` records every create, update and delete (soft delete = Deleted) of an `ITenantEntity` in `platform.audit_entries`, in the same SaveChanges as the change, with the acting user (null for webhooks and background work). No per-handler code is needed.
+- Updated entries hold only the changed properties, Created all of them, Deleted none. Audit columns and `TenantId` are ignored.
+- **Properties tagged `[Sensitive]` on entities are redacted**: the entry records `{ "redacted": true }` instead of old/new, so the log shows that a value changed but never what it was.
+- Read with `GET /api/audit-log?entityType=&entityId=&userId=&page=&pageSize=` (needs `Settings:Read`; newest first; `pageSize` max 100). `entityType` is `schema.table`, e.g. `identity.roles`. Entries are tenant-isolated by the EF filter and RLS.
+- Decisions: [ADR-0017](../adr/0017-audit-log-and-outbox.md).
 
 ## Secrets & webhooks
 - Integration tokens encrypted at rest (ASP.NET Data Protection; key ring persisted in DB).

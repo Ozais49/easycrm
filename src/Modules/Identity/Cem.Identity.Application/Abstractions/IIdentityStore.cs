@@ -49,6 +49,10 @@ public interface IIdentityStore
 
     void Remove(Entity entity);
 
+    /// <summary>Queues an integration event, written by the next save in the same transaction as the other changes.</summary>
+    void Publish<TEvent>(TEvent integrationEvent)
+        where TEvent : IIntegrationEvent;
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 
     /// <summary>

@@ -7,7 +7,7 @@
 |---|---|---|
 | Web (SPA) | Cloudflare Pages | Static build |
 | Media & static files | Cloudflare R2 + CDN | Presigned direct uploads; watermarked variants; PDFs |
-| API | Low-end Linux VPS | .NET 10 behind reverse proxy (Caddy assumed — TODO); memory budget per ADR-0009 |
+| API | Low-end Linux VPS | .NET 10 behind reverse proxy (Caddy assumed — TODO); memory budget per ADR-0009; host must have `tzdata` installed (IANA time zones, InvariantGlobalization) |
 | Postgres | **Same VPS** (1 GB RAM / 1 vCPU total) | Tuned for low memory per ADR-0009; nightly pg_dump → R2; RLS required |
 | Auth | Clerk free | |
 

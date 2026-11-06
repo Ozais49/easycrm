@@ -4,7 +4,7 @@
 
 ## General
 - TypeScript strict; no `any` (use `unknown` + narrowing)
-- ESLint + Prettier — TODO configure
+- ESLint (flat config: typescript-eslint, react-hooks; `no-explicit-any` is an error) and Prettier (no semicolons, single quotes, width 100) are configured: `npm run lint`, `npm run format`
 - Function components only; named exports
 
 ## Naming
@@ -13,7 +13,8 @@
 
 ## Data
 - TanStack Query for all server state; query keys factory per module (`contactKeys.detail(id)`)
-- API client generated from OpenAPI with **orval** (TanStack Query hooks + zod); never hand-write request types
+- API client generated from the OpenAPI snapshot (`web/openapi/cem.json`) with **orval** (TanStack Query hooks + types, `npm run api:generate`); never hand-write request or response types. Forms validate with zod schemas written next to the form
+- Errors: the mutator (`lib/api/client.ts`) parses RFC 7807 problem responses into `ApiError` (`status`, `code` from the `code` extension, `title`, `fieldErrors` from `errors`). `friendlyMessage(error)` turns it into "what happened + what to do" text and never shows codes; `applyFieldErrors` copies `fieldErrors` onto react-hook-form fields (case-insensitive), falling back to a toast
 - Optimistic updates only where rollback is trivial (kanban moves)
 
 ## Forms

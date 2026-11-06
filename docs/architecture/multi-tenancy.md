@@ -27,7 +27,7 @@ Two paths converge on the same idempotent, race-safe code (`IdentityProvisioner`
 
 ## Non-user contexts
 - Integration webhooks (WhatsApp, IG, TikTok): tenant resolved via `IntegrationAccount` (`phone_number_id`, IG account id, TikTok advertiser id).
-- Background jobs / outbox: tenant id carried on each message.
+- Background jobs / outbox: every outbox message carries `tenant_id` (null when the event happens before a tenant exists, e.g. `TenantCreated`); the dispatcher sets the tenant context of the handler scope from it per message. `platform.outbox_messages` is deliberately not tenant-scoped (no RLS): the dispatcher reads all tenants, [ADR-0017](../adr/0017-audit-log-and-outbox.md). `platform.audit_entries` is a normal tenant table with RLS.
 - Platform admin: separate role/connection allowed to bypass — TODO design.
 
 - **Seeding**: the winner of the tenant insert also seeds the five default roles (unique tenant + name makes a repeat harmless), with the tenant context set first so stamping and RLS apply. New memberships get a default role, see [security-and-permissions](security-and-permissions.md). Session resolution self-heals: a tenant with no roles is seeded, and an active member with no role assignment gets the default role (covers a crash between the saves and tenants that predate RBAC).

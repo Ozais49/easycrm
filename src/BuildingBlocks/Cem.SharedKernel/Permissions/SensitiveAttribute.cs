@@ -3,6 +3,7 @@ namespace Cem.SharedKernel.Permissions;
 /// <summary>
 /// Marks a DTO property as part of a <see cref="FieldGroup"/>. Responses omit it for callers who cannot read the
 /// group; requests that set it are rejected for callers who cannot edit the group.
+/// Put it on entity properties too: the audit log then records that the value changed, never the value itself.
 /// </summary>
 /// <remarks>
 /// Sensitive request fields should be nullable (<c>decimal?</c>, <c>string?</c>) so that "not sent" is null:

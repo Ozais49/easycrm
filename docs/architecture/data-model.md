@@ -15,8 +15,13 @@ All tenant entities: `id (uuid v7)`, `tenant_id`, `created_at`, `created_by`, `u
 - **Portfolio**: PortfolioItem (+ `is_published`), MediaAsset (original key, watermarked variant keys, thumbnail keys), Collection, CollectionItem, ShareLink (expires_at, password_hash), WatermarkSettings, Update
 - **Settings (public API)**: ApiKey (hashed, scopes, revoked_at)
 - **Inbox**: IntegrationAccount, Conversation, Message, ConversationParticipant
-- **Platform**: AuditLog, OutboxMessage, FileObject
+- **Platform** (schema `platform`): AuditEntry, OutboxMessage (below), FileObject (planned)
 
 ## TODO
 - ERD, cardinalities, indexes
 - Money: `numeric(18,2)`, always NPR (single currency, no per-row currency column)
+
+## Platform tables
+**`platform.audit_entries`** (tenant-owned, RLS): `id`, `tenant_id`, `occurred_at`, `user_id?` (null = system), `action` (`Created` | `Updated` | `Deleted`, soft delete = Deleted), `entity_type` (`schema.table`, e.g. `identity.roles`), `entity_id`, `changes jsonb` (`{ "property": { "old", "new" } }`; `{ "redacted": true }` for `[Sensitive]` properties). Indexes: `(tenant_id, entity_type, entity_id, occurred_at desc)`, `(tenant_id, occurred_at desc)`.
+
+**`platform.outbox_messages`** (not tenant-scoped, no RLS): `id`, `tenant_id?`, `event_type`, `payload jsonb`, `occurred_at`, `processed_at?`, `attempts`, `last_error?`, `next_attempt_at`, `dead_at?`. Partial index on `next_attempt_at` where `processed_at` and `dead_at` are null.

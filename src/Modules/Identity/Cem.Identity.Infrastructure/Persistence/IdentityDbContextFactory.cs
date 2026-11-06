@@ -13,6 +13,6 @@ public sealed class IdentityDbContextFactory : IDesignTimeDbContextFactory<Ident
         var builder = new DbContextOptionsBuilder<IdentityDbContext>();
         builder.UseCemNpgsql("Host=localhost;Database=cem", IdentityDbContext.SchemaName);
 
-        return new IdentityDbContext(builder.Options, new RequestContext());
+        return new IdentityDbContext(builder.Options, new RequestContext(), TimeProvider.System);
     }
 }

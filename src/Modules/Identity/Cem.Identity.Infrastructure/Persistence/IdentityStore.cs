@@ -67,6 +67,9 @@ public sealed class IdentityStore(IdentityDbContext db) : IIdentityStore
 
     public void Remove(Entity entity) => db.Remove(entity);
 
+    public void Publish<TEvent>(TEvent integrationEvent)
+        where TEvent : IIntegrationEvent => db.AddIntegrationEvent(integrationEvent);
+
     public Task SaveChangesAsync(CancellationToken cancellationToken) => db.SaveChangesAsync(cancellationToken);
 
     public async Task<bool> TrySaveNewAsync(CancellationToken cancellationToken)

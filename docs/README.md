@@ -20,6 +20,7 @@ A lite, **multi-tenant** CRM for creative & service-based orgs: calendar, portfo
 | Backend conventions | Built-in logging (no Serilog), FluentValidation, manual mapping, built-in OpenAPI, schema per module, central package management, `TimeProvider`, UUID v7 | [0014](adr/0014-backend-conventions.md) |
 | Tenancy | JIT provisioning + Clerk webhooks, tenant context, RLS via `set_config` per connection | [0015](adr/0015-tenant-resolution-and-provisioning.md) |
 | RBAC | Role permission matrix as JSONB, union of roles, endpoint-filter enforcement, field omit/reject, default role from Clerk | [0016](adr/0016-rbac-model.md) |
+| Audit and outbox | Shared `platform` tables written in each module transaction, `[Sensitive]` redaction in audit, tenant-less outbox with in-process dispatcher, plain `BackgroundService` instead of a job library | [0017](adr/0017-audit-log-and-outbox.md) |
 | Testing | No automated tests for now; manual verification per feature | [0010](adr/0010-no-automated-tests-initially.md) |
 | Public content | Watermarked media, `/public/v1` Content API | [0011](adr/0011-public-content-api-and-watermarking.md) |
 | Locale | English UI, AD + Bikram Sambat dates, NPR (lakh/crore), VAT | — |

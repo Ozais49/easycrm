@@ -35,4 +35,12 @@ Modules: Identity/Tenancy, Crm (Companies, Contacts, Activities), Calendar, Sale
 - [ ] Reads use `AsNoTracking` + projections; lists paginated; no unbounded queries
 
 ## Commands
-TODO
+```bash
+dotnet tool restore                      # once: installs dotnet-ef
+dotnet build                             # warnings are errors
+dotnet run --project src/Cem.Host        # http://localhost:5080  (/health, /openapi/v1.json in Development)
+# new migration for a module context (replace placeholders):
+dotnet ef migrations add <Name> --project src/Modules/<Module>/<Module>.Infrastructure --startup-project src/Cem.Host --context <Module>DbContext
+dotnet ef database update --project src/Modules/<Module>/<Module>.Infrastructure --startup-project src/Cem.Host --context <Module>DbContext
+```
+Deploy: TODO.

@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Cem.Host/Cem.Host.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/Cem.Infrastructure.Common/Cem.Infrastructure.Common.csproj" />
+    <Project Path="src/BuildingBlocks/Cem.SharedKernel/Cem.SharedKernel.csproj" />
+  </Folder>
+</Solution>

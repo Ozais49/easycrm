@@ -24,6 +24,6 @@ Single deployable modular monolith — see [ADR-0001](../adr/0001-modular-monoli
 
 ## Cross-cutting
 - Errors: RFC 7807 ProblemDetails
-- Logging: TODO (Serilog assumed)
+- Logging: built-in `Microsoft.Extensions.Logging` with the JSON console formatter (simple console in Development); no Serilog — [ADR-0014](../adr/0014-backend-conventions.md)
 - Real-time: TODO (SignalR for inbox/notifications assumed)
 - Background jobs: outbox dispatcher, token refresh, reminders — TODO library choice

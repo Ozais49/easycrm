@@ -17,4 +17,4 @@
 ## Rules
 - Other modules access data only via `<Module>.Contracts` (query interfaces + event types) or integration events.
 - Events go through the outbox — [ADR-0005](../adr/0005-integration-events-outbox.md).
-- TODO: one Postgres schema per module (e.g. `crm.contacts`)? Assumed yes.
+- One Postgres schema per module (e.g. `crm.contacts`) — confirmed, see [ADR-0014](../adr/0014-backend-conventions.md).

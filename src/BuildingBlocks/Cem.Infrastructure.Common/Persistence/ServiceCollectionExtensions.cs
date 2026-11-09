@@ -1,4 +1,5 @@
 using Cem.Infrastructure.Common.Auditing;
+using Cem.Infrastructure.Common.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -25,6 +26,8 @@ public static class ServiceCollectionExtensions
         services.TryAddScoped<AuditableEntityInterceptor>();
         services.TryAddScoped<TenantStampInterceptor>();
         services.TryAddScoped<TenantSessionConnectionInterceptor>();
+        services.TryAddSingleton<OutboxSignal>();
+        services.TryAddScoped<OutboxSignalInterceptor>();
 
         services.AddDbContext<TContext>((serviceProvider, options) => options
             .UseCemNpgsql(connectionString, schema)
@@ -34,7 +37,8 @@ public static class ServiceCollectionExtensions
                 serviceProvider.GetRequiredService<AuditInterceptor>(),
                 serviceProvider.GetRequiredService<AuditableEntityInterceptor>(),
                 serviceProvider.GetRequiredService<TenantStampInterceptor>(),
-                serviceProvider.GetRequiredService<TenantSessionConnectionInterceptor>()));
+                serviceProvider.GetRequiredService<TenantSessionConnectionInterceptor>(),
+                serviceProvider.GetRequiredService<OutboxSignalInterceptor>()));
 
         return services;
     }

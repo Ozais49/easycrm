@@ -16,12 +16,18 @@ namespace Cem.Platform.Outbox;
 public sealed class OutboxDispatcher(
     IServiceScopeFactory scopeFactory,
     IEnumerable<IntegrationEventRegistration> registrations,
+    OutboxSignal signal,
     TimeProvider timeProvider,
     ILogger<OutboxDispatcher> logger) : BackgroundService
 {
     private const int BatchSize = 20;
 
-    private static readonly TimeSpan IdleDelay = TimeSpan.FromSeconds(2);
+    /// <summary>
+    /// When idle, the dispatcher sleeps until <see cref="OutboxSignal"/> says new messages were saved. This poll is
+    /// only the safety net for retries that come due and messages saved inside an explicit transaction.
+    /// </summary>
+    private static readonly TimeSpan FallbackPollInterval = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan FailureBaseDelay = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan MaxFailureDelay = TimeSpan.FromMinutes(1);
     private static readonly TimeSpan Retention = TimeSpan.FromDays(7);
     private static readonly TimeSpan PurgeInterval = TimeSpan.FromHours(1);
@@ -45,7 +51,12 @@ public sealed class OutboxDispatcher(
                 await PurgeProcessedIfDueAsync(stoppingToken);
 
                 failures = 0;
-                delay = delivered == BatchSize ? TimeSpan.Zero : IdleDelay;
+                if (delivered < BatchSize)
+                {
+                    await signal.WaitAsync(FallbackPollInterval, stoppingToken);
+                }
+
+                continue;
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -55,7 +66,7 @@ public sealed class OutboxDispatcher(
             {
                 // Typically the database is unreachable. Back off (2 s doubling up to 1 min) instead of crashing the host.
                 failures++;
-                delay = TimeSpan.FromSeconds(Math.Min(IdleDelay.TotalSeconds * Math.Pow(2, failures), MaxFailureDelay.TotalSeconds));
+                delay = TimeSpan.FromSeconds(Math.Min(FailureBaseDelay.TotalSeconds * Math.Pow(2, failures), MaxFailureDelay.TotalSeconds));
                 logger.LogError("Outbox dispatch failed ({Error}); retrying in {Delay}.", ex.Message, delay);
             }
 

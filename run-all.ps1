@@ -32,7 +32,8 @@ $web = Join-Path $root 'web'
 $migrationTargets = @(
     @{ Project = 'src/Modules/Identity/Cem.Identity.Infrastructure'; Context = 'IdentityDbContext' },
     @{ Project = 'src/BuildingBlocks/Cem.Platform'; Context = 'PlatformDbContext' },
-    @{ Project = 'src/Modules/Settings/Cem.Settings.Infrastructure'; Context = 'SettingsDbContext' }
+    @{ Project = 'src/Modules/Settings/Cem.Settings.Infrastructure'; Context = 'SettingsDbContext' },
+    @{ Project = 'src/Modules/Crm/Cem.Crm.Infrastructure'; Context = 'CrmDbContext' }
 )
 
 function Write-Step([string]$message) { Write-Host "==> $message" -ForegroundColor Cyan }

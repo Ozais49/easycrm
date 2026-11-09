@@ -17,8 +17,15 @@ public static class CustomFieldEndpoints
         var fields = api.MapGroup("/custom-fields");
 
         // Open to every member: record forms and lists need the definitions.
-        fields.MapGet("/", async (CustomFieldEntity entityType, ISender sender, CancellationToken cancellationToken) =>
-                (await sender.Send(new ListCustomFieldsQuery(entityType), cancellationToken)).ToHttpResult())
+        // entityType binds as a string: query-string enum binding is case-sensitive, but the API's enums are camelCase.
+        fields.MapGet("/", async (string entityType, ISender sender, CancellationToken cancellationToken) =>
+                Enum.TryParse<CustomFieldEntity>(entityType, ignoreCase: true, out var entity)
+                    && !int.TryParse(entityType, out _)
+                    ? (await sender.Send(new ListCustomFieldsQuery(entity), cancellationToken)).ToHttpResult()
+                    : TypedResults.ValidationProblem(new Dictionary<string, string[]>
+                    {
+                        ["entityType"] = ["Must be 'company' or 'contact'."]
+                    }))
             .WithName("ListCustomFields")
             .Produces<IReadOnlyList<CustomFieldDto>>()
             .ProducesValidationProblem();

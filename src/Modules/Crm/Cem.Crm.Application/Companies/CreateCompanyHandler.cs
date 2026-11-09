@@ -2,12 +2,13 @@ using Cem.Crm.Application.Abstractions;
 using Cem.Crm.Domain;
 using Cem.Identity.Contracts;
 using Cem.SharedKernel;
+using Cem.SharedKernel.Permissions;
 using Mediator;
 
 namespace Cem.Crm.Application.Companies;
 
 public sealed class CreateCompanyHandler(
-    ICrmStore store, ICrmQueries queries, IMemberDirectory directory, ICurrentUser user)
+    ICrmStore store, ICrmQueries queries, IMemberDirectory directory, IPermissionService permissions, ICurrentUser user)
     : ICommandHandler<CreateCompanyCommand, Result<CompanyDto>>
 {
     public async ValueTask<Result<CompanyDto>> Handle(CreateCompanyCommand command, CancellationToken cancellationToken)
@@ -16,6 +17,11 @@ public sealed class CreateCompanyHandler(
         if (ownerUserId is null)
         {
             return Result<CompanyDto>.Failure(CrmErrors.Invalid("OwnerUserId", "An owner is required."));
+        }
+
+        if (!RecordAccess.For(Scope.Crm, PermissionAction.Create, permissions, user).Allows(ownerUserId.Value, command.TeamId))
+        {
+            return Result<CompanyDto>.Failure(CrmErrors.OwnerOutsideCreateLevel);
         }
 
         var invalid = await OwnershipChecks.ValidateAsync(

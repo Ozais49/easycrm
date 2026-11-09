@@ -28,11 +28,14 @@ public sealed class RecordAccess
     public static RecordAccess For(Scope scope, PermissionAction action, IPermissionService permissions, ICurrentUser user) =>
         new(permissions.LevelFor(scope, action), user.UserId ?? Guid.Empty, [.. permissions.TeamIds]);
 
-    public bool Allows(IOwnedRecord record) => _level switch
+    public bool Allows(IOwnedRecord record) => Allows(record.OwnerUserId, record.TeamId);
+
+    /// <summary>The same rule for an owner and team that are not saved yet, e.g. on create.</summary>
+    public bool Allows(Guid ownerUserId, Guid? teamId) => _level switch
     {
         PermissionLevel.All => true,
-        PermissionLevel.Team => record.OwnerUserId == _userId || (record.TeamId is { } team && _teamIds.Contains(team)),
-        PermissionLevel.Own => record.OwnerUserId == _userId,
+        PermissionLevel.Team => ownerUserId == _userId || (teamId is { } team && _teamIds.Contains(team)),
+        PermissionLevel.Own => ownerUserId == _userId,
         _ => false
     };
 

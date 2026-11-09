@@ -52,7 +52,8 @@ const baseSchema = z.object({
     .trim()
     .refine((value) => value === '' || /^\d{9}$/.test(value), 'PAN must be exactly 9 digits.'),
   ...addressShape,
-  ownerUserId: z.string().min(1, 'Choose an owner.'),
+  // Empty string = unassigned.
+  ownerUserId: z.string(),
   teamId: z.string(),
 })
 
@@ -88,7 +89,8 @@ function toFormValues(
     email: company?.email ?? '',
     panNumber: company?.panNumber ?? '',
     ...toAddressFormValues(company?.address),
-    ownerUserId: company?.ownerUserId ?? meUserId,
+    // New records default to the creator; an existing unassigned record stays unassigned.
+    ownerUserId: company ? (company.ownerUserId ?? '') : meUserId,
     teamId: company?.teamId ?? '',
   }
 }
@@ -158,7 +160,7 @@ function CompanyFormFields({ company, meUserId, definitions }: CompanyFormFields
       email: orNull(values.email),
       panNumber: orNull(values.panNumber),
       address: toAddressDto(values),
-      ownerUserId: values.ownerUserId,
+      ownerUserId: orNull(values.ownerUserId),
       teamId: orNull(values.teamId),
       tags: values.tags,
       customFields: toCustomFieldsDto(definitions, values.customFields),

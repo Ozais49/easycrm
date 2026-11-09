@@ -62,6 +62,15 @@ public static class CompanyEndpoints
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        // Take up an unassigned company. Any edit level will do, "own" included (see ClaimCompanyHandler).
+        companies.MapPost("/{id:guid}/claim", async (Guid id, ISender sender, CancellationToken cancellationToken) =>
+                (await sender.Send(new ClaimCompanyCommand(id), cancellationToken)).ToHttpResult())
+            .RequirePermission(Scope.Crm, PermissionAction.Edit)
+            .WithName("ClaimCompany")
+            .Produces<CompanyDto>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
         companies.MapDelete("/{id:guid}", async (Guid id, ISender sender, CancellationToken cancellationToken) =>
                 (await sender.Send(new DeleteCompanyCommand(id), cancellationToken)).ToHttpResult())
             .RequirePermission(Scope.Crm, PermissionAction.Delete)

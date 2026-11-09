@@ -22,6 +22,8 @@ import { useFieldPermission } from '@/features/identity/hooks/useFieldPermission
 import { toastApiError } from '@/lib/api/errors'
 import {
   getListCompaniesQueryKey,
+  getGetCompanyQueryKey,
+  useClaimCompany,
   useDeleteCompany,
   useGetCompany,
   useListContacts,
@@ -37,6 +39,7 @@ export function CompanyDetailPage() {
   const company = useGetCompany(companyId)
   const definitions = useCustomFieldDefinitions('company')
   const deleteCompany = useDeleteCompany()
+  const claimCompany = useClaimCompany()
   const members = useMemberDirectory()
   const teams = useTeamDirectory()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -57,13 +60,28 @@ export function CompanyDetailPage() {
       },
     )
 
+  const claim = () =>
+    claimCompany.mutate(
+      { id: companyId },
+      {
+        onSuccess: async () => {
+          await queryClient.invalidateQueries({ queryKey: getGetCompanyQueryKey(companyId) })
+          await queryClient.invalidateQueries({ queryKey: getListCompaniesQueryKey() })
+          toast.success('Company assigned to you.')
+        },
+        onError: toastApiError,
+      },
+    )
+
   if (company.isPending) return <ListSkeleton rows={5} />
   if (company.error) {
     return <ErrorState error={company.error} onRetry={() => void company.refetch()} />
   }
 
   const data = company.data
-  const ownerName = members.nameOf(data.ownerUserId) ?? (members.isSuccess ? 'Former member' : '—')
+  const ownerName = data.ownerUserId
+    ? (members.nameOf(data.ownerUserId) ?? (members.isSuccess ? 'Former member' : '—'))
+    : 'Unassigned'
   const teamName = data.teamId
     ? (teams.nameOf(data.teamId) ?? (teams.isSuccess ? 'Removed team' : '—'))
     : '—'
@@ -75,6 +93,13 @@ export function CompanyDetailPage() {
         description={data.industry ?? undefined}
         action={
           <div className="flex flex-wrap gap-2">
+            {data.ownerUserId === null ? (
+              <PermissionGate scope="crm" action="edit">
+                <Button onClick={claim} disabled={claimCompany.isPending}>
+                  Assign to me
+                </Button>
+              </PermissionGate>
+            ) : null}
             <PermissionGate scope="crm" action="edit">
               <Button variant="outline" asChild>
                 <Link to="/companies/$companyId/edit" params={{ companyId: data.id }}>

@@ -63,6 +63,15 @@ public static class ContactEndpoints
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        // Take up an unassigned contact. Any edit level will do, "own" included (see ClaimContactHandler).
+        contacts.MapPost("/{id:guid}/claim", async (Guid id, ISender sender, CancellationToken cancellationToken) =>
+                (await sender.Send(new ClaimContactCommand(id), cancellationToken)).ToHttpResult())
+            .RequirePermission(Scope.Crm, PermissionAction.Edit)
+            .WithName("ClaimContact")
+            .Produces<ContactDto>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
         contacts.MapDelete("/{id:guid}", async (Guid id, ISender sender, CancellationToken cancellationToken) =>
                 (await sender.Send(new DeleteContactCommand(id), cancellationToken)).ToHttpResult())
             .RequirePermission(Scope.Crm, PermissionAction.Delete)

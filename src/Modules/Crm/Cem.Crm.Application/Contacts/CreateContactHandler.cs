@@ -16,19 +16,16 @@ public sealed class CreateContactHandler(
 {
     public async ValueTask<Result<ContactDto>> Handle(CreateContactCommand command, CancellationToken cancellationToken)
     {
-        var ownerUserId = command.OwnerUserId ?? user.UserId;
-        if (ownerUserId is null)
-        {
-            return Result<ContactDto>.Failure(CrmErrors.Invalid("OwnerUserId", "An owner is required."));
-        }
+        // Null leaves the record unassigned, for someone to take it up.
+        var ownerUserId = command.OwnerUserId;
 
-        if (!RecordAccess.For(Scope.Crm, PermissionAction.Create, permissions, user).Allows(ownerUserId.Value, command.TeamId))
+        if (!RecordAccess.For(Scope.Crm, PermissionAction.Create, permissions, user).Allows(ownerUserId, command.TeamId))
         {
             return Result<ContactDto>.Failure(CrmErrors.OwnerOutsideCreateLevel);
         }
 
         var invalid = await OwnershipChecks.ValidateAsync(
-            directory, ownerUserId.Value, command.TeamId, null, null, cancellationToken);
+            directory, ownerUserId, command.TeamId, null, null, cancellationToken);
         if (invalid is not null)
         {
             return Result<ContactDto>.Failure(invalid);
@@ -55,7 +52,7 @@ public sealed class CreateContactHandler(
             Text.Clean(command.Phone),
             Text.Clean(command.Mobile),
             AddressDto.ToDomain(command.Address),
-            ownerUserId.Value,
+            ownerUserId,
             command.TeamId);
 
         contact.SetCustomFields(customFields.Value);

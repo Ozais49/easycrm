@@ -18,6 +18,8 @@ import { useMemberDirectory, useTeamDirectory } from '@/features/crm/hooks/useDi
 import { toastApiError } from '@/lib/api/errors'
 import {
   getListContactsQueryKey,
+  getGetContactQueryKey,
+  useClaimContact,
   useDeleteContact,
   useGetContact,
 } from '@/lib/api/generated/endpoints'
@@ -29,6 +31,7 @@ export function ContactDetailPage() {
   const contact = useGetContact(contactId)
   const definitions = useCustomFieldDefinitions('contact')
   const deleteContact = useDeleteContact()
+  const claimContact = useClaimContact()
   const members = useMemberDirectory()
   const teams = useTeamDirectory()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -49,13 +52,28 @@ export function ContactDetailPage() {
       },
     )
 
+  const claim = () =>
+    claimContact.mutate(
+      { id: contactId },
+      {
+        onSuccess: async () => {
+          await queryClient.invalidateQueries({ queryKey: getGetContactQueryKey(contactId) })
+          await queryClient.invalidateQueries({ queryKey: getListContactsQueryKey() })
+          toast.success('Contact assigned to you.')
+        },
+        onError: toastApiError,
+      },
+    )
+
   if (contact.isPending) return <ListSkeleton rows={5} />
   if (contact.error) {
     return <ErrorState error={contact.error} onRetry={() => void contact.refetch()} />
   }
 
   const data = contact.data
-  const ownerName = members.nameOf(data.ownerUserId) ?? (members.isSuccess ? 'Former member' : '—')
+  const ownerName = data.ownerUserId
+    ? (members.nameOf(data.ownerUserId) ?? (members.isSuccess ? 'Former member' : '—'))
+    : 'Unassigned'
   const teamName = data.teamId
     ? (teams.nameOf(data.teamId) ?? (teams.isSuccess ? 'Removed team' : '—'))
     : '—'
@@ -70,6 +88,13 @@ export function ContactDetailPage() {
         description={data.jobTitle ?? undefined}
         action={
           <div className="flex flex-wrap gap-2">
+            {data.ownerUserId === null ? (
+              <PermissionGate scope="crm" action="edit">
+                <Button onClick={claim} disabled={claimContact.isPending}>
+                  Assign to me
+                </Button>
+              </PermissionGate>
+            ) : null}
             <PermissionGate scope="crm" action="edit">
               <Button variant="outline" asChild>
                 <Link to="/contacts/$contactId/edit" params={{ contactId: data.id }}>

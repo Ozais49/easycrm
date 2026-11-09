@@ -16,6 +16,9 @@ internal static class CrmErrors
     public static readonly Error TagsChangedConcurrently =
         Error.Conflict("tags.conflict", "The tags were changed at the same time. Try again.");
 
+    public static readonly Error AlreadyAssigned =
+        Error.Conflict("records.already_assigned", "Someone already owns this record.");
+
     public static readonly Error PermissionDenied =
         Error.Forbidden("permission.denied", "You are not allowed to change this record.");
 

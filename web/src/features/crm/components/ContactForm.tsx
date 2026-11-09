@@ -56,7 +56,8 @@ const baseSchema = z.object({
   phone: z.string().trim().max(30, 'Use 30 characters or fewer.'),
   mobile: z.string().trim().max(30, 'Use 30 characters or fewer.'),
   ...addressShape,
-  ownerUserId: z.string().min(1, 'Choose an owner.'),
+  // Empty string = unassigned.
+  ownerUserId: z.string(),
   teamId: z.string(),
 })
 
@@ -95,7 +96,8 @@ function toFormValues(
     phone: contact?.phone ?? '',
     mobile: contact?.mobile ?? '',
     ...toAddressFormValues(contact?.address),
-    ownerUserId: contact?.ownerUserId ?? meUserId,
+    // New records default to the creator; an existing unassigned record stays unassigned.
+    ownerUserId: contact ? (contact.ownerUserId ?? '') : meUserId,
     teamId: contact?.teamId ?? '',
   }
 }
@@ -177,7 +179,7 @@ function ContactFormFields({ contact, companyId, meUserId, definitions }: Contac
       phone: pii.canEdit ? orNull(values.phone) : null,
       mobile: pii.canEdit ? orNull(values.mobile) : null,
       address: pii.canEdit ? toAddressDto(values) : null,
-      ownerUserId: values.ownerUserId,
+      ownerUserId: orNull(values.ownerUserId),
       teamId: orNull(values.teamId),
       tags: values.tags,
       customFields: toCustomFieldsDto(definitions, values.customFields),

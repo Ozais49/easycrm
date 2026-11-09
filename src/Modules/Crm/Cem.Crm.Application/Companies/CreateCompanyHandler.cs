@@ -16,19 +16,16 @@ public sealed class CreateCompanyHandler(
 {
     public async ValueTask<Result<CompanyDto>> Handle(CreateCompanyCommand command, CancellationToken cancellationToken)
     {
-        var ownerUserId = command.OwnerUserId ?? user.UserId;
-        if (ownerUserId is null)
-        {
-            return Result<CompanyDto>.Failure(CrmErrors.Invalid("OwnerUserId", "An owner is required."));
-        }
+        // Null leaves the record unassigned, for someone to take it up.
+        var ownerUserId = command.OwnerUserId;
 
-        if (!RecordAccess.For(Scope.Crm, PermissionAction.Create, permissions, user).Allows(ownerUserId.Value, command.TeamId))
+        if (!RecordAccess.For(Scope.Crm, PermissionAction.Create, permissions, user).Allows(ownerUserId, command.TeamId))
         {
             return Result<CompanyDto>.Failure(CrmErrors.OwnerOutsideCreateLevel);
         }
 
         var invalid = await OwnershipChecks.ValidateAsync(
-            directory, ownerUserId.Value, command.TeamId, null, null, cancellationToken);
+            directory, ownerUserId, command.TeamId, null, null, cancellationToken);
         if (invalid is not null)
         {
             return Result<CompanyDto>.Failure(invalid);
@@ -49,7 +46,7 @@ public sealed class CreateCompanyHandler(
             Text.Clean(command.Email),
             Text.Clean(command.PanNumber),
             AddressDto.ToDomain(command.Address),
-            ownerUserId.Value,
+            ownerUserId,
             command.TeamId);
 
         company.SetCustomFields(customFields.Value);

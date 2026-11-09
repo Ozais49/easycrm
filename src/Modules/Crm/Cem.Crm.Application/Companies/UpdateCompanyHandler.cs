@@ -26,7 +26,7 @@ public sealed class UpdateCompanyHandler(
             return Result<CompanyDto>.Failure(CrmErrors.PermissionDenied);
         }
 
-        var ownerUserId = command.OwnerUserId ?? company.OwnerUserId;
+        var ownerUserId = command.OwnerUserId; // null unassigns
         var invalid = await OwnershipChecks.ValidateAsync(
             directory, ownerUserId, command.TeamId, company.OwnerUserId, company.TeamId, cancellationToken);
         if (invalid is not null)

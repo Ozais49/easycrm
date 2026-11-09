@@ -19,7 +19,7 @@ public sealed record ContactDto(
     [property: Sensitive(FieldGroup.ContactPii)] string? Phone,
     [property: Sensitive(FieldGroup.ContactPii)] string? Mobile,
     [property: Sensitive(FieldGroup.ContactPii)] AddressDto? Address,
-    Guid OwnerUserId,
+    Guid? OwnerUserId,
     Guid? TeamId,
     IReadOnlyList<TagDto> Tags,
     IReadOnlyDictionary<string, JsonElement> CustomFields,

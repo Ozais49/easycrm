@@ -6,12 +6,12 @@ namespace Cem.Crm.Application;
 internal static class OwnershipChecks
 {
     /// <summary>
-    /// Owner must be an active member and the team must exist, both in the current tenant. Values equal to the
+    /// Owner (if any) must be an active member and the team must exist, both in the current tenant. Values equal to the
     /// current ones are not checked again, so editing a record whose owner has since left still works.
     /// </summary>
     public static async Task<Error?> ValidateAsync(
         IMemberDirectory directory,
-        Guid ownerUserId,
+        Guid? ownerUserId,
         Guid? teamId,
         Guid? currentOwnerUserId,
         Guid? currentTeamId,
@@ -19,7 +19,7 @@ internal static class OwnershipChecks
     {
         var errors = new Dictionary<string, string[]>();
 
-        if (ownerUserId != currentOwnerUserId && !await directory.IsActiveMemberAsync(ownerUserId, cancellationToken))
+        if (ownerUserId is { } owner && owner != currentOwnerUserId && !await directory.IsActiveMemberAsync(owner, cancellationToken))
         {
             errors["OwnerUserId"] = ["The owner must be an active member of this organization."];
         }

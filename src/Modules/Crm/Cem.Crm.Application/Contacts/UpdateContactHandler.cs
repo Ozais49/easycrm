@@ -26,7 +26,7 @@ public sealed class UpdateContactHandler(
             return Result<ContactDto>.Failure(CrmErrors.PermissionDenied);
         }
 
-        var ownerUserId = command.OwnerUserId ?? contact.OwnerUserId;
+        var ownerUserId = command.OwnerUserId; // null unassigns
         var invalid = await OwnershipChecks.ValidateAsync(
             directory, ownerUserId, command.TeamId, contact.OwnerUserId, contact.TeamId, cancellationToken);
         if (invalid is not null)

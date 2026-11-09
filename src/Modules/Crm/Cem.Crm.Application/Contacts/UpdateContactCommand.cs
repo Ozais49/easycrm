@@ -4,7 +4,7 @@ using Mediator;
 
 namespace Cem.Crm.Application.Contacts;
 
-/// <param name="OwnerUserId">Null keeps the current owner.</param>
+/// <param name="OwnerUserId">Null unassigns the record.</param>
 /// <param name="Tags">Replaces the tags of the contact; null keeps them.</param>
 /// <param name="CustomFields">Replaces the values of the active custom fields; null keeps all values.</param>
 public sealed record UpdateContactCommand(

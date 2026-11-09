@@ -4,7 +4,7 @@ using Mediator;
 
 namespace Cem.Crm.Application.Companies;
 
-/// <param name="OwnerUserId">Defaults to the current user.</param>
+/// <param name="OwnerUserId">Null leaves the record unassigned (the web form defaults to the current user).</param>
 public sealed record CreateCompanyCommand(
     string Name,
     string? Industry,

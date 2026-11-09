@@ -13,7 +13,7 @@ public sealed record CompanyDto(
     string? Email,
     string? PanNumber,
     AddressDto Address,
-    Guid OwnerUserId,
+    Guid? OwnerUserId,
     Guid? TeamId,
     IReadOnlyList<TagDto> Tags,
     IReadOnlyDictionary<string, JsonElement> CustomFields,

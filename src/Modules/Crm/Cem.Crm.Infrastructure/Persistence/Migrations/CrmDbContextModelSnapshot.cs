@@ -67,7 +67,7 @@ namespace Cem.Crm.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("name");
 
-                    b.Property<Guid>("OwnerUserId")
+                    b.Property<Guid?>("OwnerUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("owner_user_id");
 
@@ -224,7 +224,7 @@ namespace Cem.Crm.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(30)")
                         .HasColumnName("mobile");
 
-                    b.Property<Guid>("OwnerUserId")
+                    b.Property<Guid?>("OwnerUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("owner_user_id");
 

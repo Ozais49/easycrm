@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Cem.Crm.Application\Cem.Crm.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Cem.Infrastructure.Common\Cem.Infrastructure.Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+  </ItemGroup>
+</Project>

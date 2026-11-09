@@ -1,3 +1,4 @@
+using Cem.Crm.Endpoints;
 using Cem.Identity.Endpoints;
 using Cem.Identity.Endpoints.Tenancy;
 using Cem.Platform;
@@ -33,6 +34,7 @@ public static class WebApplicationExtensions
         api.MapIdentityApi();
         api.MapPlatformApi();
         api.MapSettingsApi();
+        api.MapCrmApi();
 
         return app;
     }

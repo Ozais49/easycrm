@@ -1,0 +1,48 @@
+using Cem.Crm.Application.Abstractions;
+using Cem.Identity.Contracts;
+using Cem.SharedKernel;
+using Cem.SharedKernel.Permissions;
+using Mediator;
+
+namespace Cem.Crm.Application.Companies;
+
+public sealed class UpdateCompanyHandler(
+    ICrmStore store, ICrmQueries queries, IMemberDirectory directory, IPermissionService permissions, ICurrentUser user)
+    : ICommandHandler<UpdateCompanyCommand, Result<CompanyDto>>
+{
+    public async ValueTask<Result<CompanyDto>> Handle(UpdateCompanyCommand command, CancellationToken cancellationToken)
+    {
+        var company = await store.FindCompanyAsync(command.Id, cancellationToken);
+        if (company is null || !RecordAccess.For(Scope.Crm, PermissionAction.Read, permissions, user).Allows(company))
+        {
+            return Result<CompanyDto>.Failure(CrmErrors.CompanyNotFound);
+        }
+
+        if (!RecordAccess.For(Scope.Crm, PermissionAction.Edit, permissions, user).Allows(company))
+        {
+            return Result<CompanyDto>.Failure(CrmErrors.PermissionDenied);
+        }
+
+        var ownerUserId = command.OwnerUserId ?? company.OwnerUserId;
+        var invalid = await OwnershipChecks.ValidateAsync(
+            directory, ownerUserId, command.TeamId, company.OwnerUserId, company.TeamId, cancellationToken);
+        if (invalid is not null)
+        {
+            return Result<CompanyDto>.Failure(invalid);
+        }
+
+        company.Update(
+            Text.Clean(command.Name)!,
+            Text.Clean(command.Industry),
+            Text.Clean(command.Website),
+            Text.Clean(command.Phone),
+            Text.Clean(command.Email),
+            Text.Clean(command.PanNumber),
+            AddressDto.ToDomain(command.Address));
+        company.Assign(ownerUserId, command.TeamId);
+        await store.SaveChangesAsync(cancellationToken);
+
+        var updated = await queries.GetCompanyAsync(company.Id, RecordAccess.Unrestricted, cancellationToken);
+        return updated ?? throw new InvalidOperationException("An updated company could not be read back.");
+    }
+}

@@ -1,4 +1,5 @@
 using Cem.Identity.Application.Abstractions;
+using Cem.Identity.Contracts;
 using Cem.Identity.Infrastructure.Permissions;
 using Cem.Identity.Infrastructure.Persistence;
 using Cem.SharedKernel.Permissions;
@@ -20,6 +21,7 @@ public static class IdentityModule
         services.AddScoped<IIdentityStore, IdentityStore>();
         services.AddScoped<IdentityProvisioner>();
         services.AddScoped<IIdentityQueries, IdentityQueries>();
+        services.AddScoped<IMemberDirectory, MemberDirectory>();
 
         // One PermissionCache instance serves both reading (permission service) and invalidation (handlers).
         services.AddScoped<PermissionCache>();

@@ -1,14 +1,15 @@
 import { Link } from '@tanstack/react-router'
-import { NAV_ITEMS } from '@/app/navigation'
+import { useNavItems } from '@/app/navigation'
 
 /** Mobile navigation; hidden from md up, where the sidebar takes over. */
 export function BottomTabs() {
+  const navItems = useNavItems()
   return (
     <nav
       aria-label="Main"
       className="bg-background fixed inset-x-0 bottom-0 z-30 flex border-t pb-[env(safe-area-inset-bottom)] md:hidden"
     >
-      {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+      {navItems.map(({ to, label, icon: Icon }) => (
         <Link
           key={to}
           to={to}

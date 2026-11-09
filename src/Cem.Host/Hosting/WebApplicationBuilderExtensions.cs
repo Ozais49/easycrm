@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Cem.Crm.Infrastructure;
 using Cem.Identity.Endpoints;
 using Cem.Identity.Infrastructure;
 using Cem.Infrastructure.Common.Auth;
@@ -55,6 +56,7 @@ public static class WebApplicationBuilderExtensions
         services.AddIdentityModule(builder.Configuration);
         services.AddIdentityEndpoints();
         services.AddSettingsModule(builder.Configuration);
+        services.AddCrmModule(builder.Configuration);
 
         return builder;
     }

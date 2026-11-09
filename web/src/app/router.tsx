@@ -19,6 +19,82 @@ const rootRoute = createRootRoute({
 
 const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: HomePage })
 
+// Companies and contacts are lazy-loaded; reading needs Crm:Read, which the navigation already hides without.
+const companiesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'companies',
+  component: lazyRouteComponent(
+    () => import('@/features/crm/pages/CompaniesPage'),
+    'CompaniesPage',
+  ),
+})
+
+const newCompanyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'companies/new',
+  component: lazyRouteComponent(
+    () => import('@/features/crm/pages/CompanyCreatePage'),
+    'CompanyCreatePage',
+  ),
+})
+
+const companyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'companies/$companyId',
+  component: lazyRouteComponent(
+    () => import('@/features/crm/pages/CompanyDetailPage'),
+    'CompanyDetailPage',
+  ),
+})
+
+const editCompanyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'companies/$companyId/edit',
+  component: lazyRouteComponent(
+    () => import('@/features/crm/pages/CompanyEditPage'),
+    'CompanyEditPage',
+  ),
+})
+
+const contactsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'contacts',
+  component: lazyRouteComponent(
+    () => import('@/features/crm/pages/ContactsPage'),
+    'ContactsPage',
+  ),
+})
+
+// ?companyId= pre-selects the company, used by "New contact" on a company page.
+const newContactRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'contacts/new',
+  validateSearch: (search: Record<string, unknown>): { companyId?: string } =>
+    typeof search.companyId === 'string' ? { companyId: search.companyId } : {},
+  component: lazyRouteComponent(
+    () => import('@/features/crm/pages/ContactCreatePage'),
+    'ContactCreatePage',
+  ),
+})
+
+const contactRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'contacts/$contactId',
+  component: lazyRouteComponent(
+    () => import('@/features/crm/pages/ContactDetailPage'),
+    'ContactDetailPage',
+  ),
+})
+
+const editContactRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'contacts/$contactId/edit',
+  component: lazyRouteComponent(
+    () => import('@/features/crm/pages/ContactEditPage'),
+    'ContactEditPage',
+  ),
+})
+
 // The settings screens are lazy-loaded: they are only needed once someone opens Settings.
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -103,6 +179,14 @@ const auditLogRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   homeRoute,
+  companiesRoute,
+  newCompanyRoute,
+  companyRoute,
+  editCompanyRoute,
+  contactsRoute,
+  newContactRoute,
+  contactRoute,
+  editContactRoute,
   settingsRoute.addChildren([
     settingsIndexRoute,
     generalRoute,

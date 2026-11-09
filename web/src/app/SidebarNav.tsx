@@ -1,14 +1,15 @@
 import { Link } from '@tanstack/react-router'
-import { NAV_ITEMS } from '@/app/navigation'
+import { useNavItems } from '@/app/navigation'
 
 type SidebarNavProps = {
   onNavigate?: () => void
 }
 
 export function SidebarNav({ onNavigate }: SidebarNavProps) {
+  const navItems = useNavItems()
   return (
     <nav aria-label="Main" className="flex flex-col gap-1">
-      {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+      {navItems.map(({ to, label, icon: Icon }) => (
         <Link
           key={to}
           to={to}

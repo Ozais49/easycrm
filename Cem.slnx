@@ -7,6 +7,12 @@
     <Project Path="src/BuildingBlocks/Cem.Platform/Cem.Platform.csproj" />
     <Project Path="src/BuildingBlocks/Cem.SharedKernel/Cem.SharedKernel.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Crm/">
+    <Project Path="src/Modules/Crm/Cem.Crm.Application/Cem.Crm.Application.csproj" />
+    <Project Path="src/Modules/Crm/Cem.Crm.Domain/Cem.Crm.Domain.csproj" />
+    <Project Path="src/Modules/Crm/Cem.Crm.Endpoints/Cem.Crm.Endpoints.csproj" />
+    <Project Path="src/Modules/Crm/Cem.Crm.Infrastructure/Cem.Crm.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Identity/">
     <Project Path="src/Modules/Identity/Cem.Identity.Application/Cem.Identity.Application.csproj" />
     <Project Path="src/Modules/Identity/Cem.Identity.Contracts/Cem.Identity.Contracts.csproj" />

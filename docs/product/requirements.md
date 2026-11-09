@@ -7,7 +7,9 @@ Small creative & service-based orgs (studios, agencies, photographers, consultan
 
 ## Modules
 ### Core CRM
-- Companies (client organizations; placeholder label), Contacts, Tags, Teams
+- **Built (2.1):** Companies (client organizations; placeholder label) and Contacts: list with name search, detail, create, edit, soft delete. Each record has an owner and an optional team; access follows the `crm` permission level (all, team or own). A contact belongs to at most one company (the same person at two companies is two unlinked contact records). Contact email, phone, mobile and address are `ContactPii`. Companies carry a Nepal PAN/VAT number (9 digits) and a province-based address
+- **Deferred:** Tags, custom fields on records, activity stream, global search
+- Teams (see Settings)
 - Activity stream per record (notes, calls, meetings, messages), global search
 - Custom fields per entity (admin-defined, JSONB)
 

@@ -9,7 +9,10 @@ import { PermissionGate } from '@/components/PermissionGate'
 import { ResponsiveTable, type Column } from '@/components/ResponsiveTable'
 import { Button } from '@/components/ui/button'
 import { SearchInput } from '@/features/crm/components/SearchInput'
+import { TagFilter } from '@/features/crm/components/TagFilter'
 import { contactName } from '@/features/crm/contactName'
+import { useCustomFieldDefinitions } from '@/features/crm/hooks/useCustomFieldDefinitions'
+import { customFieldColumns, tagsColumn } from '@/features/crm/listColumns'
 import { useFieldPermission } from '@/features/identity/hooks/useFieldPermission'
 import { useListContacts } from '@/lib/api/generated/endpoints'
 import type { ContactDto } from '@/lib/api/generated/models'
@@ -19,11 +22,14 @@ const PAGE_SIZE = 25
 export function ContactsPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
+  const [tagId, setTagId] = useState('')
+  const definitions = useCustomFieldDefinitions('contact')
   const pii = useFieldPermission('contactPii')
   const contacts = useListContacts({
     page,
     pageSize: PAGE_SIZE,
     q: search === '' ? undefined : search,
+    tagId: tagId === '' ? undefined : tagId,
   })
 
   // A new search starts on the first page.
@@ -65,9 +71,14 @@ export function ContactsPage() {
     ...(pii.canRead
       ? [
           { header: 'Email', cell: (contact: ContactDto) => contact.email ?? '—' },
-          { header: 'Phone', cell: (contact: ContactDto) => contact.mobile ?? contact.phone ?? '—' },
+          {
+            header: 'Phone',
+            cell: (contact: ContactDto) => contact.mobile ?? contact.phone ?? '—',
+          },
         ]
       : []),
+    tagsColumn<ContactDto>(),
+    ...customFieldColumns<ContactDto>(definitions.data),
   ]
 
   const newContactButton = (
@@ -85,7 +96,16 @@ export function ContactsPage() {
         description="The people you work with."
         action={newContactButton}
       />
-      <SearchInput label="Search contacts" placeholder="Search by name" onSearch={onSearch} />
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <SearchInput label="Search contacts" placeholder="Search by name" onSearch={onSearch} />
+        <TagFilter
+          value={tagId}
+          onChange={(id) => {
+            setTagId(id)
+            setPage(1)
+          }}
+        />
+      </div>
       {contacts.isPending ? <ListSkeleton /> : null}
       {contacts.error ? (
         <ErrorState error={contacts.error} onRetry={() => void contacts.refetch()} />
@@ -93,11 +113,11 @@ export function ContactsPage() {
       {contacts.data && contacts.data.items.length === 0 ? (
         <EmptyState
           message={
-            search === ''
+            search === '' && tagId === ''
               ? 'No contacts yet. Add the first one.'
-              : 'No contacts match your search. Try a different name.'
+              : 'No contacts match. Try a different name or tag.'
           }
-          action={search === '' ? newContactButton : undefined}
+          action={search === '' && tagId === '' ? newContactButton : undefined}
         />
       ) : null}
       {contacts.data && contacts.data.items.length > 0 ? (

@@ -18,8 +18,9 @@ public static class ContactEndpoints
 
         contacts.MapGet("/", async (
                 ISender sender, CancellationToken cancellationToken,
-                int page = 1, int pageSize = 25, string? q = null, Guid? companyId = null) =>
-                (await sender.Send(new ListContactsQuery(page, pageSize, q, companyId), cancellationToken)).ToHttpResult())
+                int page = 1, int pageSize = 25, string? q = null, Guid? companyId = null,
+                Guid? tagId = null) =>
+                (await sender.Send(new ListContactsQuery(page, pageSize, q, companyId, tagId), cancellationToken)).ToHttpResult())
             .RequirePermission(Scope.Crm, PermissionAction.Read)
             .WithName("ListContacts")
             .Produces<PagedResult<ContactDto>>()
@@ -37,7 +38,7 @@ public static class ContactEndpoints
                 var result = await sender.Send(
                     new CreateContactCommand(
                         request.FirstName, request.LastName, request.JobTitle, request.CompanyId, request.Email,
-                        request.Phone, request.Mobile, request.Address, request.OwnerUserId, request.TeamId),
+                        request.Phone, request.Mobile, request.Address, request.OwnerUserId, request.TeamId, request.Tags, request.CustomFields),
                     cancellationToken);
                 return result.IsSuccess
                     ? TypedResults.Created($"/api/contacts/{result.Value.Id}", result.Value)
@@ -53,7 +54,7 @@ public static class ContactEndpoints
                 (await sender.Send(
                     new UpdateContactCommand(
                         id, request.FirstName, request.LastName, request.JobTitle, request.CompanyId, request.Email,
-                        request.Phone, request.Mobile, request.Address, request.OwnerUserId, request.TeamId),
+                        request.Phone, request.Mobile, request.Address, request.OwnerUserId, request.TeamId, request.Tags, request.CustomFields),
                     cancellationToken)).ToHttpResult())
             .RequirePermission(Scope.Crm, PermissionAction.Edit)
             .WithName("UpdateContact")
@@ -61,6 +62,15 @@ public static class ContactEndpoints
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        // Take up an unassigned contact. Any edit level will do, "own" included (see ClaimContactHandler).
+        contacts.MapPost("/{id:guid}/claim", async (Guid id, ISender sender, CancellationToken cancellationToken) =>
+                (await sender.Send(new ClaimContactCommand(id), cancellationToken)).ToHttpResult())
+            .RequirePermission(Scope.Crm, PermissionAction.Edit)
+            .WithName("ClaimContact")
+            .Produces<ContactDto>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         contacts.MapDelete("/{id:guid}", async (Guid id, ISender sender, CancellationToken cancellationToken) =>
                 (await sender.Send(new DeleteContactCommand(id), cancellationToken)).ToHttpResult())

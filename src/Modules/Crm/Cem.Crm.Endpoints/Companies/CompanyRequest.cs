@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Cem.Crm.Application;
 
 namespace Cem.Crm.Endpoints.Companies;
@@ -12,4 +13,6 @@ public sealed record CompanyRequest(
     string? PanNumber,
     AddressDto? Address,
     Guid? OwnerUserId,
-    Guid? TeamId);
+    Guid? TeamId,
+    IReadOnlyList<string>? Tags,
+    IReadOnlyDictionary<string, JsonElement>? CustomFields);

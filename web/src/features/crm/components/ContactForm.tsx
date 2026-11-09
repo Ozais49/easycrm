@@ -1,9 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { Controller, FormProvider, useForm } from 'react-hook-form'
+import { useMemo } from 'react'
+import { Controller, FormProvider, useForm, type Path, type Resolver } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { ErrorState } from '@/components/ErrorState'
 import { FormField } from '@/components/FormField'
 import { ListSkeleton } from '@/components/ListSkeleton'
 import { Button } from '@/components/ui/button'
@@ -17,7 +19,18 @@ import {
 } from '@/features/crm/address'
 import { AddressFields } from '@/features/crm/components/AddressFields'
 import { CompanyPicker } from '@/features/crm/components/CompanyPicker'
+import { CustomFieldInputs } from '@/features/crm/components/CustomFieldInputs'
 import { OwnerTeamFields } from '@/features/crm/components/OwnerTeamFields'
+import { TagInput } from '@/features/crm/components/TagInput'
+import {
+  customFieldPaths,
+  customFieldsSchema,
+  toCustomFieldFormValues,
+  toCustomFieldsDto,
+  type CustomFieldFormValues,
+} from '@/features/crm/customFields'
+import { useCustomFieldDefinitions } from '@/features/crm/hooks/useCustomFieldDefinitions'
+import { useAllTags } from '@/features/crm/hooks/useTags'
 import { useFieldPermission } from '@/features/identity/hooks/useFieldPermission'
 import { useMe } from '@/features/identity/hooks/useMe'
 import { toastApiError } from '@/lib/api/errors'
@@ -28,9 +41,9 @@ import {
   useCreateContact,
   useUpdateContact,
 } from '@/lib/api/generated/endpoints'
-import type { ContactDto } from '@/lib/api/generated/models'
+import type { ContactDto, CustomFieldDto } from '@/lib/api/generated/models'
 
-const schema = z.object({
+const baseSchema = z.object({
   firstName: z
     .string()
     .trim()
@@ -43,13 +56,18 @@ const schema = z.object({
   phone: z.string().trim().max(30, 'Use 30 characters or fewer.'),
   mobile: z.string().trim().max(30, 'Use 30 characters or fewer.'),
   ...addressShape,
-  ownerUserId: z.string().min(1, 'Choose an owner.'),
+  // Empty string = unassigned.
+  ownerUserId: z.string(),
   teamId: z.string(),
 })
 
-type FormValues = z.infer<typeof schema>
+type FormValues = z.infer<typeof baseSchema> & {
+  tags: string[]
+  customFields: CustomFieldFormValues
+}
 
 const FIELDS = [
+  'tags',
   'firstName',
   'lastName',
   'jobTitle',
@@ -61,8 +79,14 @@ const FIELDS = [
   'teamId',
 ] as const
 
-function toFormValues(contact: ContactDto | undefined, meUserId: string): FormValues {
+function toFormValues(
+  contact: ContactDto | undefined,
+  meUserId: string,
+  definitions: readonly CustomFieldDto[],
+): FormValues {
   return {
+    tags: contact?.tags.map((tag) => tag.name) ?? [],
+    customFields: toCustomFieldFormValues(definitions, contact?.customFields),
     firstName: contact?.firstName ?? '',
     lastName: contact?.lastName ?? '',
     jobTitle: contact?.jobTitle ?? '',
@@ -72,7 +96,8 @@ function toFormValues(contact: ContactDto | undefined, meUserId: string): FormVa
     phone: contact?.phone ?? '',
     mobile: contact?.mobile ?? '',
     ...toAddressFormValues(contact?.address),
-    ownerUserId: contact?.ownerUserId ?? meUserId,
+    // New records default to the creator; an existing unassigned record stays unassigned.
+    ownerUserId: contact ? (contact.ownerUserId ?? '') : meUserId,
     teamId: contact?.teamId ?? '',
   }
 }
@@ -86,31 +111,61 @@ type ContactFormProps = {
 /** Creates a contact, or edits an existing one. The owner defaults to the current user. */
 export function ContactForm({ contact, companyId }: ContactFormProps) {
   const me = useMe()
-  if (!contact && !me.data) return <ListSkeleton rows={5} />
-  return <ContactFormFields contact={contact} companyId={companyId} meUserId={me.data?.user.id ?? ''} />
+  const definitions = useCustomFieldDefinitions('contact')
+  if (definitions.error) {
+    return <ErrorState error={definitions.error} onRetry={() => void definitions.refetch()} />
+  }
+  if ((!contact && !me.data) || !definitions.data) return <ListSkeleton rows={5} />
+  return (
+    <ContactFormFields
+      contact={contact}
+      companyId={companyId}
+      meUserId={me.data?.user.id ?? ''}
+      definitions={definitions.data}
+    />
+  )
 }
 
-function ContactFormFields({ contact, companyId, meUserId }: ContactFormProps & { meUserId: string }) {
+type ContactFormFieldsProps = ContactFormProps & {
+  meUserId: string
+  definitions: readonly CustomFieldDto[]
+}
+
+function ContactFormFields({ contact, companyId, meUserId, definitions }: ContactFormFieldsProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const create = useCreateContact()
   const update = useUpdateContact()
   const pii = useFieldPermission('contactPii')
+  const tags = useAllTags()
+  const schema = useMemo(
+    () =>
+      baseSchema.extend({
+        tags: z.array(z.string()),
+        customFields: customFieldsSchema(definitions),
+      }),
+    [definitions],
+  )
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { ...toFormValues(contact, meUserId), companyId: contact?.companyId ?? companyId ?? '' },
+    resolver: zodResolver(schema) as unknown as Resolver<FormValues>,
+    defaultValues: {
+      ...toFormValues(contact, meUserId, definitions),
+      companyId: contact?.companyId ?? companyId ?? '',
+    },
   })
   const { errors } = form.formState
   const pending = create.isPending || update.isPending
 
   const onSaved = async (saved: ContactDto) => {
     await queryClient.invalidateQueries({ queryKey: getListContactsQueryKey() })
-    if (contact) await queryClient.invalidateQueries({ queryKey: getGetContactQueryKey(contact.id) })
+    if (contact)
+      await queryClient.invalidateQueries({ queryKey: getGetContactQueryKey(contact.id) })
     toast.success(contact ? 'Contact saved.' : 'Contact created.')
     await navigate({ to: '/contacts/$contactId', params: { contactId: saved.id } })
   }
   const onError = (error: unknown) => {
-    if (!applyFieldErrors(error, form.setError, FIELDS)) toastApiError(error)
+    const fields = [...FIELDS, ...customFieldPaths(definitions)] as Path<FormValues>[]
+    if (!applyFieldErrors(error, form.setError, fields)) toastApiError(error)
   }
 
   const onSubmit = form.handleSubmit((values) => {
@@ -124,8 +179,10 @@ function ContactFormFields({ contact, companyId, meUserId }: ContactFormProps & 
       phone: pii.canEdit ? orNull(values.phone) : null,
       mobile: pii.canEdit ? orNull(values.mobile) : null,
       address: pii.canEdit ? toAddressDto(values) : null,
-      ownerUserId: values.ownerUserId,
+      ownerUserId: orNull(values.ownerUserId),
       teamId: orNull(values.teamId),
+      tags: values.tags,
+      customFields: toCustomFieldsDto(definitions, values.customFields),
     }
     if (contact) update.mutate({ id: contact.id, data }, { onSuccess: onSaved, onError })
     else create.mutate({ data }, { onSuccess: onSaved, onError })
@@ -165,8 +222,27 @@ function ContactFormFields({ contact, companyId, meUserId }: ContactFormProps & 
                 />
               )}
             />
+            <div className="sm:col-span-2">
+              <FormField label="Tags" htmlFor="tags" error={errors.tags?.message}>
+                <Controller
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <TagInput
+                      id="tags"
+                      value={field.value}
+                      onChange={field.onChange}
+                      suggestions={tags.data ?? []}
+                      invalid={Boolean(errors.tags)}
+                    />
+                  )}
+                />
+              </FormField>
+            </div>
           </div>
         </section>
+
+        <CustomFieldInputs definitions={definitions} />
 
         {pii.canEdit ? (
           <>

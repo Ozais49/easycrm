@@ -29,13 +29,16 @@ public sealed class Contact : AuditableEntity, ITenantEntity, ISoftDeletable, IO
     [Sensitive(FieldGroup.ContactPii)]
     public Address Address { get; private set; } = new();
 
-    public Guid OwnerUserId { get; private set; }
+    public Guid? OwnerUserId { get; private set; }
     public Guid? TeamId { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
 
+    /// <summary>Admin-defined field values as a JSON object keyed by field key (jsonb).</summary>
+    public string CustomFields { get; private set; } = "{}";
+
     public static Contact Create(
         string firstName, string? lastName, string? jobTitle, Guid? companyId,
-        string? email, string? phone, string? mobile, Address address, Guid ownerUserId, Guid? teamId)
+        string? email, string? phone, string? mobile, Address address, Guid? ownerUserId, Guid? teamId)
     {
         var contact = new Contact { OwnerUserId = ownerUserId, TeamId = teamId };
         contact.Update(firstName, lastName, jobTitle, companyId);
@@ -60,11 +63,13 @@ public sealed class Contact : AuditableEntity, ITenantEntity, ISoftDeletable, IO
         Address = address;
     }
 
-    public void Assign(Guid ownerUserId, Guid? teamId)
+    public void Assign(Guid? ownerUserId, Guid? teamId)
     {
         OwnerUserId = ownerUserId;
         TeamId = teamId;
     }
+
+    public void SetCustomFields(string json) => CustomFields = json;
 
     public void MarkDeleted(DateTimeOffset now) => DeletedAt ??= now;
 }

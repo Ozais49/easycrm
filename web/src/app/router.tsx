@@ -122,7 +122,7 @@ const generalRoute = createRoute({
   ),
 })
 
-// Members, roles, teams and the audit log need Settings:Read.
+// Members, roles, teams, tags, custom fields and the audit log need Settings:Read.
 const adminRoute = createRoute({
   getParentRoute: () => settingsRoute,
   id: 'admin',
@@ -168,6 +168,21 @@ const teamsRoute = createRoute({
   component: lazyRouteComponent(() => import('@/features/settings/pages/TeamsPage'), 'TeamsPage'),
 })
 
+const tagsRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: 'tags',
+  component: lazyRouteComponent(() => import('@/features/settings/pages/TagsPage'), 'TagsPage'),
+})
+
+const customFieldsRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: 'custom-fields',
+  component: lazyRouteComponent(
+    () => import('@/features/settings/pages/CustomFieldsPage'),
+    'CustomFieldsPage',
+  ),
+})
+
 const auditLogRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: 'audit-log',
@@ -196,6 +211,8 @@ const routeTree = rootRoute.addChildren([
       newRoleRoute,
       editRoleRoute,
       teamsRoute,
+      tagsRoute,
+      customFieldsRoute,
       auditLogRoute,
     ]),
   ]),

@@ -9,12 +9,15 @@ import { PermissionGate } from '@/components/PermissionGate'
 import { ResponsiveTable, type Column } from '@/components/ResponsiveTable'
 import { Button } from '@/components/ui/button'
 import { SearchInput } from '@/features/crm/components/SearchInput'
+import { TagFilter } from '@/features/crm/components/TagFilter'
+import { useCustomFieldDefinitions } from '@/features/crm/hooks/useCustomFieldDefinitions'
+import { customFieldColumns, tagsColumn } from '@/features/crm/listColumns'
 import { useListCompanies } from '@/lib/api/generated/endpoints'
 import type { CompanyDto } from '@/lib/api/generated/models'
 
 const PAGE_SIZE = 25
 
-const columns: Column<CompanyDto>[] = [
+const baseColumns: Column<CompanyDto>[] = [
   {
     header: 'Name',
     cell: (company) => (
@@ -30,15 +33,20 @@ const columns: Column<CompanyDto>[] = [
   { header: 'Industry', cell: (company) => company.industry ?? '—' },
   { header: 'City', cell: (company) => company.address.city ?? '—' },
   { header: 'Phone', cell: (company) => company.phone ?? '—' },
+  tagsColumn<CompanyDto>(),
 ]
 
 export function CompaniesPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
+  const [tagId, setTagId] = useState('')
+  const definitions = useCustomFieldDefinitions('company')
+  const columns = [...baseColumns, ...customFieldColumns<CompanyDto>(definitions.data)]
   const companies = useListCompanies({
     page,
     pageSize: PAGE_SIZE,
     q: search === '' ? undefined : search,
+    tagId: tagId === '' ? undefined : tagId,
   })
 
   // A new search starts on the first page; a stable callback keeps the search box from re-firing.
@@ -62,7 +70,16 @@ export function CompaniesPage() {
         description="The organizations you work with."
         action={newCompanyButton}
       />
-      <SearchInput label="Search companies" placeholder="Search by name" onSearch={onSearch} />
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <SearchInput label="Search companies" placeholder="Search by name" onSearch={onSearch} />
+        <TagFilter
+          value={tagId}
+          onChange={(id) => {
+            setTagId(id)
+            setPage(1)
+          }}
+        />
+      </div>
       {companies.isPending ? <ListSkeleton /> : null}
       {companies.error ? (
         <ErrorState error={companies.error} onRetry={() => void companies.refetch()} />
@@ -70,11 +87,11 @@ export function CompaniesPage() {
       {companies.data && companies.data.items.length === 0 ? (
         <EmptyState
           message={
-            search === ''
+            search === '' && tagId === ''
               ? 'No companies yet. Add the first one.'
-              : 'No companies match your search. Try a different name.'
+              : 'No companies match. Try a different name or tag.'
           }
-          action={search === '' ? newCompanyButton : undefined}
+          action={search === '' && tagId === '' ? newCompanyButton : undefined}
         />
       ) : null}
       {companies.data && companies.data.items.length > 0 ? (

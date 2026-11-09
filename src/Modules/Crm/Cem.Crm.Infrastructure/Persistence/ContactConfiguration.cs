@@ -17,6 +17,7 @@ public sealed class ContactConfiguration : IEntityTypeConfiguration<Contact>
         builder.Property(c => c.Phone).HasMaxLength(30);
         builder.Property(c => c.Mobile).HasMaxLength(30);
         builder.ComplexProperty(c => c.Address, AddressMapping.Configure);
+        builder.Property(c => c.CustomFields).HasColumnType("jsonb").HasDefaultValueSql("'{}'::jsonb");
 
         // A deleted company stays referenced: its contacts keep the id.
         builder.HasOne<Company>().WithMany().HasForeignKey(c => c.CompanyId).OnDelete(DeleteBehavior.Restrict);

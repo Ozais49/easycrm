@@ -1,5 +1,7 @@
 using Cem.Crm.Application.Abstractions;
+using Cem.Crm.Application.Tags;
 using Cem.Identity.Contracts;
+using Cem.Settings.Contracts;
 using Cem.SharedKernel;
 using Cem.SharedKernel.Permissions;
 using Mediator;
@@ -7,7 +9,8 @@ using Mediator;
 namespace Cem.Crm.Application.Contacts;
 
 public sealed class UpdateContactHandler(
-    ICrmStore store, ICrmQueries queries, IMemberDirectory directory, IPermissionService permissions, ICurrentUser user)
+    ICrmStore store, ICrmQueries queries, IMemberDirectory directory, ICustomFieldCatalog catalog,
+    IPermissionService permissions, ICurrentUser user)
     : ICommandHandler<UpdateContactCommand, Result<ContactDto>>
 {
     public async ValueTask<Result<ContactDto>> Handle(UpdateContactCommand command, CancellationToken cancellationToken)
@@ -23,7 +26,7 @@ public sealed class UpdateContactHandler(
             return Result<ContactDto>.Failure(CrmErrors.PermissionDenied);
         }
 
-        var ownerUserId = command.OwnerUserId ?? contact.OwnerUserId;
+        var ownerUserId = command.OwnerUserId; // null unassigns
         var invalid = await OwnershipChecks.ValidateAsync(
             directory, ownerUserId, command.TeamId, contact.OwnerUserId, contact.TeamId, cancellationToken);
         if (invalid is not null)
@@ -36,6 +39,21 @@ public sealed class UpdateContactHandler(
             && !await store.CompanyExistsAsync(companyId, cancellationToken))
         {
             return Result<ContactDto>.Failure(CrmErrors.Invalid("CompanyId", "The company does not exist."));
+        }
+
+        string? customFieldsJson = null;
+        if (command.CustomFields is not null)
+        {
+            var customFields = CustomFieldValues.Prepare(
+                await catalog.GetActiveAsync(CustomFieldEntity.Contact, cancellationToken),
+                command.CustomFields,
+                contact.CustomFields);
+            if (customFields.IsFailure)
+            {
+                return Result<ContactDto>.Failure(customFields.Error);
+            }
+
+            customFieldsJson = customFields.Value;
         }
 
         contact.Update(
@@ -55,7 +73,21 @@ public sealed class UpdateContactHandler(
         }
 
         contact.Assign(ownerUserId, command.TeamId);
-        await store.SaveChangesAsync(cancellationToken);
+        if (customFieldsJson is not null)
+        {
+            contact.SetCustomFields(customFieldsJson);
+        }
+
+        if (command.Tags is not null)
+        {
+            var tags = await store.ResolveTagsAsync(TagNames.Normalize(command.Tags), cancellationToken);
+            await store.SetTagsAsync(contact, tags, cancellationToken);
+        }
+
+        if (!await store.TrySaveAsync(cancellationToken))
+        {
+            return Result<ContactDto>.Failure(CrmErrors.TagsChangedConcurrently);
+        }
 
         var updated = await queries.GetContactAsync(contact.Id, RecordAccess.Unrestricted, cancellationToken);
         return updated ?? throw new InvalidOperationException("An updated contact could not be read back.");

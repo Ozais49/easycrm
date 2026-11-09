@@ -16,6 +16,9 @@ public sealed class CrmDbContext(
 
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<Contact> Contacts => Set<Contact>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<CompanyTag> CompanyTags => Set<CompanyTag>();
+    public DbSet<ContactTag> ContactTags => Set<ContactTag>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

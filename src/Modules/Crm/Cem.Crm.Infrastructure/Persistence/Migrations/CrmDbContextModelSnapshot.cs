@@ -40,6 +40,13 @@ namespace Cem.Crm.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
+                    b.Property<string>("CustomFields")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("custom_fields")
+                        .HasDefaultValueSql("'{}'::jsonb");
+
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
@@ -60,7 +67,7 @@ namespace Cem.Crm.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("name");
 
-                    b.Property<Guid>("OwnerUserId")
+                    b.Property<Guid?>("OwnerUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("owner_user_id");
 
@@ -135,6 +142,32 @@ namespace Cem.Crm.Infrastructure.Persistence.Migrations
                     b.ToTable("companies", "crm");
                 });
 
+            modelBuilder.Entity("Cem.Crm.Domain.CompanyTag", b =>
+                {
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tag_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("CompanyId", "TagId")
+                        .HasName("pk_company_tags");
+
+                    b.HasIndex("TagId")
+                        .HasDatabaseName("ix_company_tags_tag_id");
+
+                    b.HasIndex("TenantId", "TagId")
+                        .HasDatabaseName("ix_company_tags_tenant_id_tag_id");
+
+                    b.ToTable("company_tags", "crm");
+                });
+
             modelBuilder.Entity("Cem.Crm.Domain.Contact", b =>
                 {
                     b.Property<Guid>("Id")
@@ -153,6 +186,13 @@ namespace Cem.Crm.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
+
+                    b.Property<string>("CustomFields")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("custom_fields")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
@@ -184,7 +224,7 @@ namespace Cem.Crm.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(30)")
                         .HasColumnName("mobile");
 
-                    b.Property<Guid>("OwnerUserId")
+                    b.Property<Guid?>("OwnerUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("owner_user_id");
 
@@ -250,6 +290,77 @@ namespace Cem.Crm.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_contacts_tenant_id_team_id");
 
                     b.ToTable("contacts", "crm");
+                });
+
+            modelBuilder.Entity("Cem.Crm.Domain.ContactTag", b =>
+                {
+                    b.Property<Guid>("ContactId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("contact_id");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tag_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("ContactId", "TagId")
+                        .HasName("pk_contact_tags");
+
+                    b.HasIndex("TagId")
+                        .HasDatabaseName("ix_contact_tags_tag_id");
+
+                    b.HasIndex("TenantId", "TagId")
+                        .HasDatabaseName("ix_contact_tags_tenant_id_tag_id");
+
+                    b.ToTable("contact_tags", "crm");
+                });
+
+            modelBuilder.Entity("Cem.Crm.Domain.Tag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("color");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tags");
+
+                    b.ToTable("tags", "crm");
                 });
 
             modelBuilder.Entity("Cem.Infrastructure.Common.Auditing.AuditEntry", b =>
@@ -367,6 +478,23 @@ namespace Cem.Crm.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Cem.Crm.Domain.CompanyTag", b =>
+                {
+                    b.HasOne("Cem.Crm.Domain.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_tags_companies_company_id");
+
+                    b.HasOne("Cem.Crm.Domain.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_tags_tags_tag_id");
+                });
+
             modelBuilder.Entity("Cem.Crm.Domain.Contact", b =>
                 {
                     b.HasOne("Cem.Crm.Domain.Company", null)
@@ -374,6 +502,23 @@ namespace Cem.Crm.Infrastructure.Persistence.Migrations
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_contacts_companies_company_id");
+                });
+
+            modelBuilder.Entity("Cem.Crm.Domain.ContactTag", b =>
+                {
+                    b.HasOne("Cem.Crm.Domain.Contact", null)
+                        .WithMany()
+                        .HasForeignKey("ContactId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_contact_tags_contacts_contact_id");
+
+                    b.HasOne("Cem.Crm.Domain.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_contact_tags_tags_tag_id");
                 });
 #pragma warning restore 612, 618
         }

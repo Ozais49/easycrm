@@ -4,6 +4,7 @@ import { NativeSelect } from '@/components/ui/native-select'
 import { useMemberDirectory, useTeamDirectory } from '@/features/crm/hooks/useDirectory'
 
 export type OwnerTeamFormValues = {
+  /** Empty string means unassigned. */
   ownerUserId: string
   /** Empty string means no team. */
   teamId: string
@@ -33,6 +34,7 @@ export function OwnerTeamFields() {
     <div className="grid gap-4 sm:grid-cols-2">
       <FormField label="Owner" htmlFor="ownerUserId" error={errors.ownerUserId?.message}>
         <NativeSelect id="ownerUserId" {...register('ownerUserId')}>
+          <option value="">Unassigned</option>
           {ownerMissing ? <option value={ownerUserId}>Former member</option> : null}
           {members.data?.map((member) => (
             <option key={member.userId} value={member.userId}>

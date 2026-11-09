@@ -11,6 +11,8 @@ import {
 
 export type Column<T> = {
   header: string
+  /** Leave the column out of the mobile card (it still shows from md up). */
+  hideOnMobile?: boolean
   cell: (item: T) => ReactNode
 }
 
@@ -24,7 +26,8 @@ type ResponsiveTableProps<T> = {
 
 /** A table from md up, a list of cards on mobile. */
 export function ResponsiveTable<T>({ items, getKey, columns, actions }: ResponsiveTableProps<T>) {
-  const [titleColumn, ...detailColumns] = columns
+  const [titleColumn, ...otherColumns] = columns
+  const detailColumns = otherColumns.filter((column) => !column.hideOnMobile)
 
   return (
     <>
@@ -32,8 +35,8 @@ export function ResponsiveTable<T>({ items, getKey, columns, actions }: Responsi
         <Table>
           <TableHeader>
             <TableRow>
-              {columns.map((column) => (
-                <TableHead key={column.header}>{column.header}</TableHead>
+              {columns.map((column, index) => (
+                <TableHead key={index}>{column.header}</TableHead>
               ))}
               {actions ? (
                 <TableHead>
@@ -45,8 +48,8 @@ export function ResponsiveTable<T>({ items, getKey, columns, actions }: Responsi
           <TableBody>
             {items.map((item) => (
               <TableRow key={getKey(item)}>
-                {columns.map((column) => (
-                  <TableCell key={column.header}>{column.cell(item)}</TableCell>
+                {columns.map((column, index) => (
+                  <TableCell key={index}>{column.cell(item)}</TableCell>
                 ))}
                 {actions ? (
                   <TableCell>
@@ -65,8 +68,8 @@ export function ResponsiveTable<T>({ items, getKey, columns, actions }: Responsi
             <Card>
               <div className="font-semibold break-words">{titleColumn?.cell(item)}</div>
               <dl className="flex flex-col gap-2 text-sm">
-                {detailColumns.map((column) => (
-                  <div key={column.header} className="flex flex-col gap-0.5">
+                {detailColumns.map((column, index) => (
+                  <div key={index} className="flex flex-col gap-0.5">
                     <dt className="text-muted-foreground">{column.header}</dt>
                     <dd className="break-words">{column.cell(item)}</dd>
                   </div>

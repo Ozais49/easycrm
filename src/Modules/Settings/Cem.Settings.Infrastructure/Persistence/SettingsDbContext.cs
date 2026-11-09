@@ -16,6 +16,8 @@ public sealed class SettingsDbContext(
 
     public DbSet<TenantSettings> TenantSettings => Set<TenantSettings>();
 
+    public DbSet<CustomFieldDefinition> CustomFieldDefinitions => Set<CustomFieldDefinition>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SettingsDbContext).Assembly);

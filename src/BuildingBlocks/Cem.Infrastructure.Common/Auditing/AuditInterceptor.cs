@@ -83,7 +83,7 @@ public sealed class AuditInterceptor(TimeProvider timeProvider, ICurrentUser cur
                 currentUser.UserId,
                 action,
                 EntityTypeName(entry.Metadata),
-                (Guid)entry.Property(nameof(Entity.Id)).CurrentValue!,
+                EntityIdOf(entry),
                 JsonSerializer.SerializeToElement(changes, Json)));
         }
     }
@@ -99,10 +99,23 @@ public sealed class AuditInterceptor(TimeProvider timeProvider, ICurrentUser cur
         entry.Entity is ISoftDeletable
         && entry.Property(nameof(ISoftDeletable.DeletedAt)) is { IsModified: true, OriginalValue: null, CurrentValue: not null };
 
+    /// <summary>
+    /// The id of the audited row. A link row (composite key, no <c>Id</c>, e.g. <c>crm.company_tags</c>) is audited
+    /// under its first key value, the owning record, so the changes show up in that record's history.
+    /// </summary>
+    private static Guid EntityIdOf(EntityEntry entry)
+    {
+        var key = entry.Metadata.FindProperty(nameof(Entity.Id)) ?? entry.Metadata.FindPrimaryKey()!.Properties[0];
+        return (Guid)entry.Property(key.Name).CurrentValue!;
+    }
+
     private static Dictionary<string, object?> ChangesOf(EntityEntry entry, AuditAction action)
     {
         var changes = new Dictionary<string, object?>();
-        if (action == AuditAction.Deleted)
+
+        // A link row has nothing but its key, so the key is the change (also when the row is removed).
+        var isLink = entry.Metadata.FindProperty(nameof(Entity.Id)) is null;
+        if (action == AuditAction.Deleted && !isLink)
         {
             return changes;
         }
@@ -110,26 +123,57 @@ public sealed class AuditInterceptor(TimeProvider timeProvider, ICurrentUser cur
         foreach (var property in entry.Properties)
         {
             var metadata = property.Metadata;
-            if (metadata.IsPrimaryKey()
+            if ((metadata.IsPrimaryKey() && !isLink)
                 || IgnoredProperties.Contains(metadata.Name)
                 || (action == AuditAction.Updated && !property.IsModified))
             {
                 continue;
             }
 
-            changes[JsonNamingPolicy.CamelCase.ConvertName(metadata.Name)] = IsSensitive(metadata)
+            changes[JsonNamingPolicy.CamelCase.ConvertName(metadata.Name)] = IsSensitive(metadata.PropertyInfo)
                 ? Redacted
-                : action == AuditAction.Created
-                    ? new Dictionary<string, object?> { ["new"] = property.CurrentValue }
-                    : new Dictionary<string, object?> { ["old"] = property.OriginalValue, ["new"] = property.CurrentValue };
+                : Change(action, property.OriginalValue, property.CurrentValue);
+        }
+
+        // Complex properties (e.g. Address) are not part of entry.Properties: their members are listed as "address.city".
+        foreach (var complex in entry.ComplexProperties.Where(c => !c.Metadata.IsCollection))
+        {
+            var name = JsonNamingPolicy.CamelCase.ConvertName(complex.Metadata.Name);
+            var members = complex.Properties
+                .Where(m => action == AuditAction.Created || (m.IsModified && !Equals(m.OriginalValue, m.CurrentValue)))
+                .ToList();
+            if (members.Count == 0)
+            {
+                continue;
+            }
+
+            if (IsSensitive(complex.Metadata.PropertyInfo))
+            {
+                changes[name] = Redacted;
+                continue;
+            }
+
+            foreach (var member in members)
+            {
+                changes[$"{name}.{JsonNamingPolicy.CamelCase.ConvertName(member.Metadata.Name)}"] =
+                    Change(action, member.OriginalValue, member.CurrentValue);
+            }
         }
 
         return changes;
     }
 
+    private static Dictionary<string, object?> Change(AuditAction action, object? original, object? current) =>
+        action switch
+        {
+            AuditAction.Created => new Dictionary<string, object?> { ["new"] = current },
+            AuditAction.Deleted => new Dictionary<string, object?> { ["old"] = original },
+            _ => new Dictionary<string, object?> { ["old"] = original, ["new"] = current }
+        };
+
     // The change is recorded, the value never is.
-    private static bool IsSensitive(IProperty property) =>
-        property.PropertyInfo?.IsDefined(typeof(SensitiveAttribute), inherit: true) == true;
+    private static bool IsSensitive(System.Reflection.PropertyInfo? property) =>
+        property?.IsDefined(typeof(SensitiveAttribute), inherit: true) == true;
 
     private static string EntityTypeName(IEntityType entityType) =>
         $"{entityType.GetSchema() ?? entityType.Model.GetDefaultSchema()}.{entityType.GetTableName()}";

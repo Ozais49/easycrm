@@ -23,6 +23,12 @@ export function SettingsLayout() {
             <Link to="/settings/teams" className={TAB_CLASS}>
               Teams
             </Link>
+            <Link to="/settings/tags" className={TAB_CLASS}>
+              Tags
+            </Link>
+            <Link to="/settings/custom-fields" className={TAB_CLASS}>
+              Custom fields
+            </Link>
             <Link to="/settings/audit-log" className={TAB_CLASS}>
               Audit log
             </Link>

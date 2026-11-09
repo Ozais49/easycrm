@@ -12,6 +12,7 @@ public sealed class ListCompaniesHandler(ICrmQueries queries, IPermissionService
         await queries.ListCompaniesAsync(
             RecordAccess.For(Scope.Crm, PermissionAction.Read, permissions, user),
             Text.Clean(query.Search),
+            query.TagId,
             query.Page,
             query.PageSize,
             cancellationToken);

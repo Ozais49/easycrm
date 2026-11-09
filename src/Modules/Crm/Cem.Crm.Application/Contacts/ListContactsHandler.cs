@@ -13,6 +13,7 @@ public sealed class ListContactsHandler(ICrmQueries queries, IPermissionService 
             RecordAccess.For(Scope.Crm, PermissionAction.Read, permissions, user),
             Text.Clean(query.Search),
             query.CompanyId,
+            query.TagId,
             query.Page,
             query.PageSize,
             cancellationToken);

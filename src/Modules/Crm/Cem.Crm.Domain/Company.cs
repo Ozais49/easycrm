@@ -24,6 +24,9 @@ public sealed class Company : AuditableEntity, ITenantEntity, ISoftDeletable, IO
     public Guid? TeamId { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
 
+    /// <summary>Admin-defined field values as a JSON object keyed by field key (jsonb).</summary>
+    public string CustomFields { get; private set; } = "{}";
+
     public static Company Create(
         string name, string? industry, string? website, string? phone, string? email, string? panNumber,
         Address address, Guid ownerUserId, Guid? teamId)
@@ -50,6 +53,8 @@ public sealed class Company : AuditableEntity, ITenantEntity, ISoftDeletable, IO
         OwnerUserId = ownerUserId;
         TeamId = teamId;
     }
+
+    public void SetCustomFields(string json) => CustomFields = json;
 
     public void MarkDeleted(DateTimeOffset now) => DeletedAt ??= now;
 }

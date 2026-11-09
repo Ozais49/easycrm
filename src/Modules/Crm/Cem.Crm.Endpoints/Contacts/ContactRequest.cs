@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Cem.Crm.Application;
 using Cem.SharedKernel.Permissions;
 
@@ -17,4 +18,6 @@ public sealed record ContactRequest(
     [property: Sensitive(FieldGroup.ContactPii)] string? Mobile,
     [property: Sensitive(FieldGroup.ContactPii)] AddressDto? Address,
     Guid? OwnerUserId,
-    Guid? TeamId);
+    Guid? TeamId,
+    IReadOnlyList<string>? Tags,
+    IReadOnlyDictionary<string, JsonElement>? CustomFields);

@@ -17,6 +17,7 @@ public sealed class CompanyConfiguration : IEntityTypeConfiguration<Company>
         builder.Property(c => c.Email).HasMaxLength(254);
         builder.Property(c => c.PanNumber).HasMaxLength(9);
         builder.ComplexProperty(c => c.Address, AddressMapping.Configure);
+        builder.Property(c => c.CustomFields).HasColumnType("jsonb").HasDefaultValueSql("'{}'::jsonb");
 
         builder.HasIndex(c => new { c.TenantId, c.Name }).HasDatabaseName("ix_companies_tenant_id_name");
         builder.HasIndex(c => new { c.TenantId, c.OwnerUserId }).HasDatabaseName("ix_companies_tenant_id_owner_user_id");

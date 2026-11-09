@@ -1,5 +1,9 @@
+using System.Text.Json;
+using Cem.Crm.Application.Tags;
+
 namespace Cem.Crm.Application.Companies;
 
+/// <param name="CustomFields">Values of the active custom field definitions, keyed by field key.</param>
 public sealed record CompanyDto(
     Guid Id,
     string Name,
@@ -11,5 +15,7 @@ public sealed record CompanyDto(
     AddressDto Address,
     Guid OwnerUserId,
     Guid? TeamId,
+    IReadOnlyList<TagDto> Tags,
+    IReadOnlyDictionary<string, JsonElement> CustomFields,
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt);

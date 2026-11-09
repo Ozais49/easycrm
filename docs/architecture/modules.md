@@ -5,8 +5,8 @@
 | Module | Owns | Publishes (events) | Consumes |
 |---|---|---|---|
 | Identity/Tenancy | Tenant, User, Membership, Role, Team | TenantCreated, UserJoined | Clerk webhooks |
-| Settings | Tenant settings (time zone, date display, brand color); later picklists, tax rates, custom field definitions | SettingsChanged | TenantCreated (creates default settings) |
-| Crm | Company, Contact, Note, Activity, Tag | ContactCreated | LeadConverted |
+| Settings | Tenant settings (time zone, date display, brand color), custom field definitions (companies, contacts); later picklists, tax rates | SettingsChanged | TenantCreated (creates default settings) |
+| Crm | Company, Contact, Tag (shared by companies and contacts), Note, Activity | ContactCreated | LeadConverted |
 | Calendar | Event (+ `is_public`), Attendee, Reminder, WorkingHours, Availability (computed) | — | DeliverableDueDateChanged |
 | Sales | Lead, Deal, Product, Quote, Invoice | DealWon, LeadConverted | ContactCreated, LeadCaptured |
 | Projects | Project, Deliverable, Task, Attachment | DeliverableDueDateChanged, DeliverableApproved | DealWon |
@@ -20,6 +20,8 @@
 - One Postgres schema per module (e.g. `crm.contacts`) — confirmed, see [ADR-0014](../adr/0014-backend-conventions.md).
 
 ## Platform building block
+`Cem.Settings.Contracts` exposes `ICustomFieldCatalog` (the active custom field definitions of the current tenant: key, label, type, required, options). Crm references only that project to validate and return custom field values; the definitions themselves stay in Settings.
+
 `Cem.Platform` (not a module) owns the `platform` schema: `platform.audit_entries` and `platform.outbox_messages`, their migrations (`PlatformDbContext`), the outbox dispatcher and `GET /api/audit-log`. Every module context maps both tables (through `CemDbContextBase`) and writes them in its own transaction. See [ADR-0017](../adr/0017-audit-log-and-outbox.md).
 
 ## Integration events

@@ -33,6 +33,9 @@ public sealed class Contact : AuditableEntity, ITenantEntity, ISoftDeletable, IO
     public Guid? TeamId { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
 
+    /// <summary>Admin-defined field values as a JSON object keyed by field key (jsonb).</summary>
+    public string CustomFields { get; private set; } = "{}";
+
     public static Contact Create(
         string firstName, string? lastName, string? jobTitle, Guid? companyId,
         string? email, string? phone, string? mobile, Address address, Guid ownerUserId, Guid? teamId)
@@ -65,6 +68,8 @@ public sealed class Contact : AuditableEntity, ITenantEntity, ISoftDeletable, IO
         OwnerUserId = ownerUserId;
         TeamId = teamId;
     }
+
+    public void SetCustomFields(string json) => CustomFields = json;
 
     public void MarkDeleted(DateTimeOffset now) => DeletedAt ??= now;
 }

@@ -2,6 +2,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Cem.Crm.Domain\Cem.Crm.Domain.csproj" />
     <ProjectReference Include="..\..\Identity\Cem.Identity.Contracts\Cem.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\Settings\Cem.Settings.Contracts\Cem.Settings.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Cem.SharedKernel\Cem.SharedKernel.csproj" />
   </ItemGroup>
   <ItemGroup>

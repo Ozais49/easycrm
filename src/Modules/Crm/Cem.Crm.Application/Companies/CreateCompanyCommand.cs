@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Cem.SharedKernel;
 using Mediator;
 
@@ -13,4 +14,6 @@ public sealed record CreateCompanyCommand(
     string? PanNumber,
     AddressDto? Address,
     Guid? OwnerUserId,
-    Guid? TeamId) : ICommand<Result<CompanyDto>>, ICompanyInput;
+    Guid? TeamId,
+    IReadOnlyList<string>? Tags,
+    IReadOnlyDictionary<string, JsonElement>? CustomFields) : ICommand<Result<CompanyDto>>, ICompanyInput;

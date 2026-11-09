@@ -17,8 +17,9 @@ public static class CompanyEndpoints
         var companies = api.MapGroup("/companies");
 
         companies.MapGet("/", async (
-                ISender sender, CancellationToken cancellationToken, int page = 1, int pageSize = 25, string? q = null) =>
-                (await sender.Send(new ListCompaniesQuery(page, pageSize, q), cancellationToken)).ToHttpResult())
+                ISender sender, CancellationToken cancellationToken, int page = 1, int pageSize = 25, string? q = null,
+                Guid? tagId = null) =>
+                (await sender.Send(new ListCompaniesQuery(page, pageSize, q, tagId), cancellationToken)).ToHttpResult())
             .RequirePermission(Scope.Crm, PermissionAction.Read)
             .WithName("ListCompanies")
             .Produces<PagedResult<CompanyDto>>()
@@ -36,7 +37,7 @@ public static class CompanyEndpoints
                 var result = await sender.Send(
                     new CreateCompanyCommand(
                         request.Name, request.Industry, request.Website, request.Phone, request.Email,
-                        request.PanNumber, request.Address, request.OwnerUserId, request.TeamId),
+                        request.PanNumber, request.Address, request.OwnerUserId, request.TeamId, request.Tags, request.CustomFields),
                     cancellationToken);
                 return result.IsSuccess
                     ? TypedResults.Created($"/api/companies/{result.Value.Id}", result.Value)
@@ -52,7 +53,7 @@ public static class CompanyEndpoints
                 (await sender.Send(
                     new UpdateCompanyCommand(
                         id, request.Name, request.Industry, request.Website, request.Phone, request.Email,
-                        request.PanNumber, request.Address, request.OwnerUserId, request.TeamId),
+                        request.PanNumber, request.Address, request.OwnerUserId, request.TeamId, request.Tags, request.CustomFields),
                     cancellationToken)).ToHttpResult())
             .RequirePermission(Scope.Crm, PermissionAction.Edit)
             .WithName("UpdateCompany")

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Cem.SharedKernel;
 using Mediator;
 
@@ -14,4 +15,6 @@ public sealed record CreateContactCommand(
     string? Mobile,
     AddressDto? Address,
     Guid? OwnerUserId,
-    Guid? TeamId) : ICommand<Result<ContactDto>>, IContactInput;
+    Guid? TeamId,
+    IReadOnlyList<string>? Tags,
+    IReadOnlyDictionary<string, JsonElement>? CustomFields) : ICommand<Result<ContactDto>>, IContactInput;

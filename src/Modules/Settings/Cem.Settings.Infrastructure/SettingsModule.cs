@@ -3,6 +3,7 @@ using Cem.Infrastructure.Common.Outbox;
 using Cem.Infrastructure.Common.Persistence;
 using Cem.Settings.Application.Abstractions;
 using Cem.Settings.Application.Provisioning;
+using Cem.Settings.Contracts;
 using Cem.Settings.Infrastructure.Persistence;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +20,8 @@ public static class SettingsModule
 
         services.AddCemDbContext<SettingsDbContext>(connectionString, SettingsDbContext.SchemaName);
         services.AddScoped<ISettingsStore, SettingsStore>();
+        services.AddScoped<ICustomFieldStore, CustomFieldStore>();
+        services.AddScoped<ICustomFieldCatalog, CustomFieldCatalog>();
         services.AddIntegrationEventHandler<TenantCreated, TenantCreatedHandler>();
         services.AddValidatorsFromAssemblyContaining<TenantCreatedHandler>(ServiceLifetime.Singleton);
 

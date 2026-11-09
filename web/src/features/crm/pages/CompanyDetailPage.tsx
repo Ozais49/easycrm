@@ -14,6 +14,9 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatAddress } from '@/features/crm/address'
 import { DetailFields } from '@/features/crm/components/DetailFields'
+import { TagBadges } from '@/features/crm/components/TagBadges'
+import { customFieldDetails } from '@/features/crm/customFields'
+import { useCustomFieldDefinitions } from '@/features/crm/hooks/useCustomFieldDefinitions'
 import { useMemberDirectory, useTeamDirectory } from '@/features/crm/hooks/useDirectory'
 import { useFieldPermission } from '@/features/identity/hooks/useFieldPermission'
 import { toastApiError } from '@/lib/api/errors'
@@ -32,6 +35,7 @@ export function CompanyDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const company = useGetCompany(companyId)
+  const definitions = useCustomFieldDefinitions('company')
   const deleteCompany = useDeleteCompany()
   const members = useMemberDirectory()
   const teams = useTeamDirectory()
@@ -98,8 +102,15 @@ export function CompanyDetailPage() {
           { label: 'Address', value: formatAddress(data.address) ?? null },
           { label: 'Owner', value: ownerName },
           { label: 'Team', value: teamName },
+          { label: 'Tags', value: <TagBadges tags={data.tags} /> },
         ]}
       />
+      {definitions.data && definitions.data.length > 0 ? (
+        <DetailFields
+          title="Custom fields"
+          fields={customFieldDetails(definitions.data, data.customFields)}
+        />
+      ) : null}
 
       <CompanyContacts companyId={data.id} />
 
@@ -138,7 +149,10 @@ function CompanyContacts({ companyId }: { companyId: string }) {
     ...(pii.canRead
       ? [
           { header: 'Email', cell: (contact: ContactDto) => contact.email ?? '—' },
-          { header: 'Phone', cell: (contact: ContactDto) => contact.mobile ?? contact.phone ?? '—' },
+          {
+            header: 'Phone',
+            cell: (contact: ContactDto) => contact.mobile ?? contact.phone ?? '—',
+          },
         ]
       : []),
   ]

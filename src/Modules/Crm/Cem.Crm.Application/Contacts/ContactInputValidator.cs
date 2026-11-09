@@ -1,3 +1,4 @@
+using Cem.Crm.Application.Tags;
 using FluentValidation;
 
 namespace Cem.Crm.Application.Contacts;
@@ -13,5 +14,6 @@ public abstract class ContactInputValidator<T> : AbstractValidator<T> where T : 
         RuleFor(c => c.Phone).MaximumLength(30);
         RuleFor(c => c.Mobile).MaximumLength(30);
         RuleFor(c => c.Address!).SetValidator(new AddressValidator()).When(c => c.Address is not null);
+        this.TagListRules(c => c.Tags);
     }
 }

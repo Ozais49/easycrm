@@ -8,7 +8,8 @@ Small creative & service-based orgs (studios, agencies, photographers, consultan
 ## Modules
 ### Core CRM
 - **Built (2.1):** Companies (client organizations; placeholder label) and Contacts: list with name search, detail, create, edit, soft delete. Each record has an owner and an optional team; access follows the `crm` permission level (all, team or own). A contact belongs to at most one company (the same person at two companies is two unlinked contact records). Contact email, phone, mobile and address are `ContactPii`. Companies carry a Nepal PAN/VAT number (9 digits) and a province-based address
-- **Deferred:** Tags, custom fields on records, activity stream, global search
+- **Built (2.2):** Tags and custom fields on companies and contacts. Tags are free (typed on the record, created on the fly, case-insensitive, one shared list per organization, at most 20 per record); lists filter by tag; admins rename, recolor and delete tags in Settings. Custom fields (admin-defined per record type: text, number, date, select, checkbox; required; ordered; "show in list") render in forms and detail pages, and flagged ones become list columns (desktop table; mobile cards show the first two). Dates in custom fields use the native AD date input until the BS picker exists.
+- **Deferred:** activity stream, global search
 - Teams (see Settings)
 - Activity stream per record (notes, calls, meetings, messages), global search
 - Custom fields per entity (admin-defined, JSONB)
@@ -53,7 +54,8 @@ Small creative & service-based orgs (studios, agencies, photographers, consultan
 
 ### Settings / Admin
 - **Built (Phase 1):** tenant settings — time zone, date display (AD/BS/both), brand color (overrides `--primary`); created for each new tenant from `TenantCreated`, readable by every member, edited with `Settings:Edit`
-- **Deferred:** logo (needs R2 uploads); picklists (stages, statuses, event types), tax rates, watermark settings and custom fields arrive with the modules that use them (Sales, Calendar, Portfolio)
+- **Built (2.2):** Tags page (rename, recolor, delete) and Custom fields page (company or contact, ordered, create, edit, delete) in Settings
+- **Deferred:** logo (needs R2 uploads); picklists (stages, statuses, event types), tax rates, watermark settings arrive with the modules that use them (Sales, Calendar, Portfolio)
 - Currency is fixed to NPR (see localization guide)
 - Users & invites, Teams, Roles (permission matrix), Integrations, Custom fields
 

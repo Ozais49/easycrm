@@ -1,9 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { FormProvider, useForm } from 'react-hook-form'
+import { useMemo } from 'react'
+import { Controller, FormProvider, useForm, type Path, type Resolver } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { ErrorState } from '@/components/ErrorState'
 import { FormField } from '@/components/FormField'
 import { ListSkeleton } from '@/components/ListSkeleton'
 import { Button } from '@/components/ui/button'
@@ -16,7 +18,18 @@ import {
   toAddressFormValues,
 } from '@/features/crm/address'
 import { AddressFields } from '@/features/crm/components/AddressFields'
+import { CustomFieldInputs } from '@/features/crm/components/CustomFieldInputs'
 import { OwnerTeamFields } from '@/features/crm/components/OwnerTeamFields'
+import { TagInput } from '@/features/crm/components/TagInput'
+import {
+  customFieldPaths,
+  customFieldsSchema,
+  toCustomFieldFormValues,
+  toCustomFieldsDto,
+  type CustomFieldFormValues,
+} from '@/features/crm/customFields'
+import { useCustomFieldDefinitions } from '@/features/crm/hooks/useCustomFieldDefinitions'
+import { useAllTags } from '@/features/crm/hooks/useTags'
 import { useMe } from '@/features/identity/hooks/useMe'
 import { toastApiError } from '@/lib/api/errors'
 import { applyFieldErrors } from '@/lib/api/formErrors'
@@ -26,9 +39,9 @@ import {
   useCreateCompany,
   useUpdateCompany,
 } from '@/lib/api/generated/endpoints'
-import type { CompanyDto } from '@/lib/api/generated/models'
+import type { CompanyDto, CustomFieldDto } from '@/lib/api/generated/models'
 
-const schema = z.object({
+const baseSchema = z.object({
   name: z.string().trim().min(1, 'Enter a name.').max(200, 'Use 200 characters or fewer.'),
   industry: z.string().trim().max(100, 'Use 100 characters or fewer.'),
   website: z.string().trim().max(300, 'Use 300 characters or fewer.'),
@@ -43,9 +56,13 @@ const schema = z.object({
   teamId: z.string(),
 })
 
-type FormValues = z.infer<typeof schema>
+type FormValues = z.infer<typeof baseSchema> & {
+  tags: string[]
+  customFields: CustomFieldFormValues
+}
 
 const FIELDS = [
+  'tags',
   'name',
   'industry',
   'website',
@@ -56,8 +73,14 @@ const FIELDS = [
   'teamId',
 ] as const
 
-function toFormValues(company: CompanyDto | undefined, meUserId: string): FormValues {
+function toFormValues(
+  company: CompanyDto | undefined,
+  meUserId: string,
+  definitions: readonly CustomFieldDto[],
+): FormValues {
   return {
+    tags: company?.tags.map((tag) => tag.name) ?? [],
+    customFields: toCustomFieldFormValues(definitions, company?.customFields),
     name: company?.name ?? '',
     industry: company?.industry ?? '',
     website: company?.website ?? '',
@@ -73,30 +96,57 @@ function toFormValues(company: CompanyDto | undefined, meUserId: string): FormVa
 /** Creates a company, or edits an existing one. The owner defaults to the current user. */
 export function CompanyForm({ company }: { company?: CompanyDto }) {
   const me = useMe()
-  if (!company && !me.data) return <ListSkeleton rows={5} />
-  return <CompanyFormFields company={company} meUserId={me.data?.user.id ?? ''} />
+  const definitions = useCustomFieldDefinitions('company')
+  if (definitions.error) {
+    return <ErrorState error={definitions.error} onRetry={() => void definitions.refetch()} />
+  }
+  if ((!company && !me.data) || !definitions.data) return <ListSkeleton rows={5} />
+  return (
+    <CompanyFormFields
+      company={company}
+      meUserId={me.data?.user.id ?? ''}
+      definitions={definitions.data}
+    />
+  )
 }
 
-function CompanyFormFields({ company, meUserId }: { company?: CompanyDto; meUserId: string }) {
+type CompanyFormFieldsProps = {
+  company?: CompanyDto
+  meUserId: string
+  definitions: readonly CustomFieldDto[]
+}
+
+function CompanyFormFields({ company, meUserId, definitions }: CompanyFormFieldsProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const create = useCreateCompany()
   const update = useUpdateCompany()
+  const tags = useAllTags()
+  const schema = useMemo(
+    () =>
+      baseSchema.extend({
+        tags: z.array(z.string()),
+        customFields: customFieldsSchema(definitions),
+      }),
+    [definitions],
+  )
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: toFormValues(company, meUserId),
+    resolver: zodResolver(schema) as unknown as Resolver<FormValues>,
+    defaultValues: toFormValues(company, meUserId, definitions),
   })
   const { errors } = form.formState
   const pending = create.isPending || update.isPending
 
   const onSaved = async (saved: CompanyDto) => {
     await queryClient.invalidateQueries({ queryKey: getListCompaniesQueryKey() })
-    if (company) await queryClient.invalidateQueries({ queryKey: getGetCompanyQueryKey(company.id) })
+    if (company)
+      await queryClient.invalidateQueries({ queryKey: getGetCompanyQueryKey(company.id) })
     toast.success(company ? 'Company saved.' : 'Company created.')
     await navigate({ to: '/companies/$companyId', params: { companyId: saved.id } })
   }
   const onError = (error: unknown) => {
-    if (!applyFieldErrors(error, form.setError, FIELDS)) toastApiError(error)
+    const fields = [...FIELDS, ...customFieldPaths(definitions)] as Path<FormValues>[]
+    if (!applyFieldErrors(error, form.setError, fields)) toastApiError(error)
   }
 
   const onSubmit = form.handleSubmit((values) => {
@@ -110,6 +160,8 @@ function CompanyFormFields({ company, meUserId }: { company?: CompanyDto; meUser
       address: toAddressDto(values),
       ownerUserId: values.ownerUserId,
       teamId: orNull(values.teamId),
+      tags: values.tags,
+      customFields: toCustomFieldsDto(definitions, values.customFields),
     }
     if (company) update.mutate({ id: company.id, data }, { onSuccess: onSaved, onError })
     else create.mutate({ data }, { onSuccess: onSaved, onError })
@@ -153,8 +205,27 @@ function CompanyFormFields({ company, meUserId }: { company?: CompanyDto; meUser
             >
               <Input id="panNumber" inputMode="numeric" {...form.register('panNumber')} />
             </FormField>
+            <div className="sm:col-span-2">
+              <FormField label="Tags" htmlFor="tags" error={errors.tags?.message}>
+                <Controller
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <TagInput
+                      id="tags"
+                      value={field.value}
+                      onChange={field.onChange}
+                      suggestions={tags.data ?? []}
+                      invalid={Boolean(errors.tags)}
+                    />
+                  )}
+                />
+              </FormField>
+            </div>
           </div>
         </section>
+
+        <CustomFieldInputs definitions={definitions} />
 
         <section className="flex flex-col gap-4" aria-labelledby="company-address">
           <h2 id="company-address" className="text-xl font-semibold">

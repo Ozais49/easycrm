@@ -10,6 +10,9 @@ import { PermissionGate } from '@/components/PermissionGate'
 import { Button } from '@/components/ui/button'
 import { formatAddress } from '@/features/crm/address'
 import { DetailFields } from '@/features/crm/components/DetailFields'
+import { TagBadges } from '@/features/crm/components/TagBadges'
+import { customFieldDetails } from '@/features/crm/customFields'
+import { useCustomFieldDefinitions } from '@/features/crm/hooks/useCustomFieldDefinitions'
 import { contactName } from '@/features/crm/contactName'
 import { useMemberDirectory, useTeamDirectory } from '@/features/crm/hooks/useDirectory'
 import { toastApiError } from '@/lib/api/errors'
@@ -24,6 +27,7 @@ export function ContactDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const contact = useGetContact(contactId)
+  const definitions = useCustomFieldDefinitions('contact')
   const deleteContact = useDeleteContact()
   const members = useMemberDirectory()
   const teams = useTeamDirectory()
@@ -105,8 +109,15 @@ export function ContactDetailPage() {
           { label: 'Address', value: address },
           { label: 'Owner', value: ownerName },
           { label: 'Team', value: teamName },
+          { label: 'Tags', value: <TagBadges tags={data.tags} /> },
         ]}
       />
+      {definitions.data && definitions.data.length > 0 ? (
+        <DetailFields
+          title="Custom fields"
+          fields={customFieldDetails(definitions.data, data.customFields)}
+        />
+      ) : null}
 
       <ConfirmDialog
         open={confirmingDelete}

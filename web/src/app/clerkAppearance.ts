@@ -7,9 +7,15 @@ type Appearance = NonNullable<ComponentProps<typeof ClerkProvider>['appearance']
 export const clerkAppearance: Appearance = {
   variables: {
     colorPrimary: 'var(--primary)',
+    colorPrimaryForeground: 'var(--primary-foreground)',
     colorBackground: 'var(--card)',
     colorForeground: 'var(--foreground)',
+    // Clerk's neutral (borders, hover fills, secondary text) defaults to black, unreadable in dark mode.
+    colorNeutral: 'var(--foreground)',
+    colorMuted: 'var(--muted)',
     colorMutedForeground: 'var(--muted-foreground)',
+    colorBorder: 'var(--border)',
+    colorRing: 'var(--ring)',
     colorInput: 'var(--background)',
     colorInputForeground: 'var(--foreground)',
     colorDanger: 'var(--destructive)',

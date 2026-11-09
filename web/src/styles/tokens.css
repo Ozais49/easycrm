@@ -1,71 +1,70 @@
 /*
- * Design tokens (ADR-0012): shadcn variable names, values from Adobe Spectrum's color system
- * (https://spectrum.adobe.com/page/color-system/). Spectrum publishes no CSS for non-Adobe products, so the
- * gray scale and the blue/green/orange/red steps below are APPROXIMATIONS from memory of Spectrum's published
- * hex values, not an export. Accent and status steps were also nudged so text on them meets WCAG AA (4.5:1).
- * Check against spectrum.adobe.com before relying on exact values. Components never hard-code colors.
- * The tenant brand color overrides --primary / --primary-foreground at runtime (lib/brand.ts).
+ * Design tokens (ADR-0018): "Emerald & Charcoal" two-tone palette in shadcn variable names.
+ * Neutrals are Tailwind's zinc scale, the accent is emerald; status colors are Tailwind steps chosen for
+ * WCAG AA text contrast. Spectrum still guides type, spacing and states (ADR-0012), not color.
+ * Components never hard-code colors. The tenant brand color overrides --primary / --primary-foreground
+ * at runtime (lib/brand.ts).
  */
 :root {
-  --background: #ffffff; /* gray-50 */
-  --foreground: #2c2c2c; /* gray-900 */
+  --background: #ffffff;
+  --foreground: #18181b; /* zinc-900 */
   --card: #ffffff;
-  --card-foreground: #2c2c2c;
+  --card-foreground: #18181b;
   --popover: #ffffff;
-  --popover-foreground: #2c2c2c;
-  --primary: #0d66d0; /* blue-800 */
+  --popover-foreground: #18181b;
+  --primary: #059669; /* emerald-600 */
   --primary-foreground: #ffffff;
-  --secondary: #f5f5f5; /* gray-100 */
-  --secondary-foreground: #2c2c2c;
-  --muted: #f5f5f5; /* gray-100 */
-  --muted-foreground: #6e6e6e; /* gray-700 */
-  --accent: #eaeaea; /* gray-200 */
-  --accent-foreground: #2c2c2c;
-  --destructive: #d31510; /* red-900 */
+  --secondary: #f4f4f5; /* zinc-100 */
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5; /* zinc-100 */
+  --muted-foreground: #52525b; /* zinc-600 */
+  --accent: #ecfdf5; /* emerald-50: hover / selected */
+  --accent-foreground: #065f46; /* emerald-800 */
+  --destructive: #dc2626; /* red-600 */
   --destructive-foreground: #ffffff;
-  --border: #e1e1e1; /* gray-300 */
-  --input: #b3b3b3; /* gray-500 */
-  --ring: #2680eb; /* blue-600 */
-  --sidebar: #fafafa; /* gray-75 */
+  --border: #e4e4e7; /* zinc-200 */
+  --input: #a1a1aa; /* zinc-400 */
+  --ring: #059669;
+  --sidebar: #fafafa; /* zinc-50 */
 
-  --informative: #0d66d0;
+  --informative: #2563eb; /* blue-600 */
   --informative-foreground: #ffffff;
-  --positive: #12805c; /* green-1000 */
+  --positive: #047857; /* emerald-700 */
   --positive-foreground: #ffffff;
-  --notice: #e68619; /* orange-900 */
+  --notice: #d97706; /* amber-600 */
   --notice-foreground: #000000;
-  --negative: #d31510;
+  --negative: #dc2626;
   --negative-foreground: #ffffff;
 }
 
 .dark {
-  --background: #252525; /* gray-50 (dark) */
-  --foreground: #f1f1f1;
-  --card: #2f2f2f; /* gray-75 */
-  --card-foreground: #f1f1f1;
-  --popover: #2f2f2f;
-  --popover-foreground: #f1f1f1;
-  --primary: #1473e6; /* blue-700 */
-  --primary-foreground: #ffffff;
-  --secondary: #323232; /* gray-100 */
-  --secondary-foreground: #f1f1f1;
-  --muted: #323232;
-  --muted-foreground: #a3a3a3;
-  --accent: #3e3e3e; /* gray-200 */
-  --accent-foreground: #f1f1f1;
-  --destructive: #ec5b62; /* red-700 */
-  --destructive-foreground: #000000;
-  --border: #4a4a4a; /* gray-300 */
-  --input: #6e6e6e; /* gray-500 */
-  --ring: #4b9cf5; /* blue-500 */
-  --sidebar: #1d1d1d;
+  --background: #09090b; /* zinc-950 */
+  --foreground: #fafafa; /* zinc-50 */
+  --card: #18181b; /* zinc-900 */
+  --card-foreground: #fafafa;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
+  --primary: #34d399; /* emerald-400 */
+  --primary-foreground: #09090b;
+  --secondary: #27272a; /* zinc-800 */
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa; /* zinc-400 */
+  --accent: #064e3b; /* emerald-900: hover / selected */
+  --accent-foreground: #d1fae5; /* emerald-100 */
+  --destructive: #f87171; /* red-400 */
+  --destructive-foreground: #09090b;
+  --border: #3f3f46; /* zinc-700 */
+  --input: #52525b; /* zinc-600 */
+  --ring: #34d399;
+  --sidebar: #0f0f12;
 
-  --informative: #4b9cf5;
-  --informative-foreground: #000000;
-  --positive: #2d9d78; /* green-900 */
-  --positive-foreground: #000000;
-  --notice: #e68619;
-  --notice-foreground: #000000;
-  --negative: #ec5b62;
-  --negative-foreground: #000000;
+  --informative: #60a5fa; /* blue-400 */
+  --informative-foreground: #09090b;
+  --positive: #34d399;
+  --positive-foreground: #09090b;
+  --notice: #fbbf24; /* amber-400 */
+  --notice-foreground: #09090b;
+  --negative: #f87171;
+  --negative-foreground: #09090b;
 }

@@ -3,11 +3,11 @@
 > Purpose: how CEM looks and behaves. Status: Draft — **light + dark mode confirmed**; foundations follow **[Adobe Spectrum](https://spectrum.adobe.com/)** ([ADR-0012](../adr/0012-adobe-spectrum-design-foundations.md))
 
 ## Design system: Adobe Spectrum (guidelines only)
-- Spectrum is the reference for **foundations**: color, typography, spacing, sizing, iconography, states, motion, accessibility, writing.
+- Spectrum is the reference for **foundations** (color excepted, see below): typography, spacing, sizing, iconography, states, motion, accessibility, writing.
 - Implementation stays **shadcn/ui + Tailwind** ([ADR-0007](../adr/0007-shadcn-tailwind-ui.md)): Spectrum values become our CSS tokens and shadcn components are styled to match. No React Spectrum / Spectrum CSS / React Aria packages.
 - Where this guide and Spectrum disagree, this guide wins (e.g. tenant branding, mobile layout); note the deviation here.
 - **Platform scale**: Spectrum "medium" sizing on desktop, "large" on touch/mobile.
-- **Color**: Spectrum's gray scale + semantic colors (accent, informative, negative, notice, positive) for light and dark; tenant brand overrides only the accent (`--primary`).
+- **Color**: **Emerald & Charcoal** two-tone palette, not Spectrum's ([ADR-0018](../adr/0018-emerald-charcoal-palette.md)): zinc neutrals, emerald accent (light `#059669`, dark `#34D399`), plus semantic status colors (informative, negative, notice, positive) for light and dark; tenant brand overrides only the accent (`--primary`).
 - **Typography**: Spectrum type scale. Font: **Source Sans 3** (Adobe's open-source sans, SIL Open Font License, free for commercial use; closest open match to Adobe Clean), with **Source Code Pro** (OFL) for monospace. Adobe Clean is proprietary and not used.
 - **Writing**: Spectrum voice and tone, together with [content-voice](content-voice.md).
 
@@ -39,7 +39,7 @@
 - **Forms**: single column on mobile, two columns on lg+; inline validation; sticky save bar
 
 ## Design tokens
-- Color: `--background`, `--foreground`, `--primary`, `--muted`, `--accent`, `--destructive`, `--border`, status colors — values from Spectrum's color system, defined in `web/src/styles/tokens.css`. **Approximations:** the gray scale and the blue / green / orange / red steps are from memory of Spectrum's published hex values, not an export; the accent and status steps were nudged for WCAG AA contrast (e.g. blue-800 `#0d66d0` as light primary, green-1000 for positive). Verify against spectrum.adobe.com before relying on exact values
+- Color: `--background`, `--foreground`, `--primary`, `--muted`, `--accent`, `--destructive`, `--border`, status colors — Emerald & Charcoal values ([ADR-0018](../adr/0018-emerald-charcoal-palette.md)), defined in `web/src/styles/tokens.css`. Small emerald text on white uses `--accent-foreground` (emerald-800), because emerald-600 is below 4.5:1 for body text
 - Every token defined for **light and dark** themes; theme = system preference with user toggle (persisted)
 - Never hard-code colors — brand change must be a token-only change
 - Tenant branding overrides `--primary` (+ logo)

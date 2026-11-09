@@ -17,9 +17,10 @@ internal static class TagNames
     /// </summary>
     public static void TagListRules<T>(this AbstractValidator<T> validator, Func<T, IReadOnlyList<string>?> tags)
     {
-        validator.RuleFor(c => tags(c)).OverridePropertyName("Tags").Must(t => Normalize(t!).Count <= MaxPerRecord)
+        validator.RuleFor(c => tags(c)).Must(t => Normalize(t!).Count <= MaxPerRecord)
             .When(c => tags(c) is not null)
-            .WithMessage($"At most {MaxPerRecord} tags are allowed.");
-        validator.RuleForEach(c => tags(c)).OverridePropertyName("Tags").MaximumLength(MaxLength);
+            .WithMessage($"At most {MaxPerRecord} tags are allowed.")
+            .OverridePropertyName("Tags");
+        validator.RuleForEach(c => tags(c)).MaximumLength(MaxLength).OverridePropertyName("Tags");
     }
 }

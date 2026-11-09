@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using System.Text.Json;
 using Cem.Crm.Application;
 using Cem.Crm.Application.Abstractions;
 using Cem.Crm.Application.Companies;
@@ -18,10 +17,7 @@ public sealed class CrmQueries(CrmDbContext db, ICustomFieldCatalog catalog) : I
     private const int MaxTags = 500;
 
     // Tags and custom field values are filled in after the query (one extra query per page), so the projection
-    // carries placeholders and the raw custom_fields json next to the dto.
-    private static readonly IReadOnlyList<TagDto> NoTags = [];
-    private static readonly IReadOnlyDictionary<string, JsonElement> NoFields = new Dictionary<string, JsonElement>();
-
+    // leaves them null (EF rejects shared constant objects in a projection) and carries the raw custom_fields json.
     private sealed record Row<T>(T Dto, string CustomFields);
 
     private static readonly Expression<Func<Company, Row<CompanyDto>>> ToCompanyRow = c => new Row<CompanyDto>(
@@ -36,8 +32,8 @@ public sealed class CrmQueries(CrmDbContext db, ICustomFieldCatalog catalog) : I
             new AddressDto(c.Address.Street, c.Address.City, c.Address.District, c.Address.Province),
             c.OwnerUserId,
             c.TeamId,
-            NoTags,
-            NoFields,
+            null!, // tags: filled in after the query
+            null!, // custom fields: filled in after the query
             c.CreatedAt,
             c.UpdatedAt),
         c.CustomFields);
@@ -202,8 +198,8 @@ public sealed class CrmQueries(CrmDbContext db, ICustomFieldCatalog catalog) : I
             new AddressDto(c.Address.Street, c.Address.City, c.Address.District, c.Address.Province),
             c.OwnerUserId,
             c.TeamId,
-            NoTags,
-            NoFields,
+            null!, // tags: filled in after the query
+            null!, // custom fields: filled in after the query
             c.CreatedAt,
             c.UpdatedAt),
         c.CustomFields);

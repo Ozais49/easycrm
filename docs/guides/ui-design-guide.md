@@ -28,7 +28,7 @@
 
 ## App shell
 - Desktop: left sidebar (modules by permission), top bar (org switcher, theme toggle, user menu today; global search, quick create and notifications are added when they exist)
-- Mobile: top bar + bottom tabs, only for features that exist (today Home and Settings; Calendar, Inbox, Portfolio join as they ship)
+- Mobile: top bar + bottom tabs, only for features that exist (today Home, Companies, Contacts and Settings; Calendar, Inbox, Portfolio join as they ship)
 
 ## Layout patterns
 - **List view**: search, filters, saved views, sortable table (md+) / card list (base), bulk actions, empty state

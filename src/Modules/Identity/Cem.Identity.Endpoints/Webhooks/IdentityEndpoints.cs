@@ -1,3 +1,4 @@
+using Cem.Identity.Endpoints.Directory;
 using Cem.Identity.Endpoints.Me;
 using Cem.Identity.Endpoints.Members;
 using Cem.Identity.Endpoints.Roles;
@@ -18,5 +19,5 @@ public static class IdentityEndpoints
 
     /// <summary>The tenant-scoped endpoints; map them onto the <c>/api</c> group that requires a tenant.</summary>
     public static IEndpointRouteBuilder MapIdentityApi(this IEndpointRouteBuilder api) =>
-        api.MapMe().MapMembers().MapRoles().MapTeams();
+        api.MapMe().MapMembers().MapRoles().MapTeams().MapDirectory();
 }

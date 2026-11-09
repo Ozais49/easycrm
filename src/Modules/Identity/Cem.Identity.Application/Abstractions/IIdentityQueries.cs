@@ -1,3 +1,4 @@
+using Cem.Identity.Application.Directory;
 using Cem.Identity.Application.Members;
 using Cem.Identity.Application.Me;
 using Cem.Identity.Application.Permissions;
@@ -22,4 +23,10 @@ public interface IIdentityQueries
     Task<RoleDto?> GetRoleAsync(Guid roleId, CancellationToken cancellationToken);
 
     Task<PagedResult<TeamDto>> ListTeamsAsync(int page, int pageSize, CancellationToken cancellationToken);
+
+    /// <summary>Active members of the current tenant for pickers, ordered by name, at most 500.</summary>
+    Task<IReadOnlyList<DirectoryMemberDto>> ListDirectoryMembersAsync(CancellationToken cancellationToken);
+
+    /// <summary>Teams of the current tenant for pickers, ordered by name, at most 500.</summary>
+    Task<IReadOnlyList<DirectoryTeamDto>> ListDirectoryTeamsAsync(CancellationToken cancellationToken);
 }

@@ -15,6 +15,8 @@
     <ProjectReference Include="..\BuildingBlocks\Cem.SharedKernel\Cem.SharedKernel.csproj" />
     <ProjectReference Include="..\Modules\Identity\Cem.Identity.Endpoints\Cem.Identity.Endpoints.csproj" />
     <ProjectReference Include="..\Modules\Identity\Cem.Identity.Infrastructure\Cem.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Crm\Cem.Crm.Endpoints\Cem.Crm.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Crm\Cem.Crm.Infrastructure\Cem.Crm.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Settings\Cem.Settings.Endpoints\Cem.Settings.Endpoints.csproj" />
     <ProjectReference Include="..\Modules\Settings\Cem.Settings.Infrastructure\Cem.Settings.Infrastructure.csproj" />
   </ItemGroup>

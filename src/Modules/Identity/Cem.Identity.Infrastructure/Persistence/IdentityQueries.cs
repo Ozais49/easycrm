@@ -1,4 +1,5 @@
 using Cem.Identity.Application.Abstractions;
+using Cem.Identity.Application.Directory;
 using Cem.Identity.Application.Members;
 using Cem.Identity.Application.Me;
 using Cem.Identity.Application.Permissions;
@@ -14,6 +15,8 @@ namespace Cem.Identity.Infrastructure.Persistence;
 
 public sealed class IdentityQueries(IdentityDbContext db) : IIdentityQueries
 {
+    private const int DirectoryLimit = 500;
+
     public async Task<PermissionSnapshot> GetPermissionSnapshotAsync(Guid userId, CancellationToken cancellationToken)
     {
         var matrices = await (
@@ -96,4 +99,35 @@ public sealed class IdentityQueries(IdentityDbContext db) : IIdentityQueries
                 t.Name,
                 db.TeamMembers.Where(m => m.TeamId == t.Id).Select(m => m.MembershipId).ToList()))
             .ToPagedAsync(page, pageSize, cancellationToken);
+
+    public async Task<IReadOnlyList<DirectoryMemberDto>> ListDirectoryMembersAsync(CancellationToken cancellationToken)
+    {
+        var rows = await (
+            from membership in db.TenantMemberships.AsNoTracking()
+            join user in db.Users on membership.UserId equals user.Id
+            where membership.Status == MembershipStatus.Active
+            orderby user.FirstName, user.LastName, user.Email, user.Id
+            select new { user.Id, user.FirstName, user.LastName, user.Email })
+            .Take(DirectoryLimit)
+            .ToListAsync(cancellationToken);
+
+        // Users provisioned from a token before the Clerk webhook have no name yet: fall back to the email.
+        return rows
+            .Select(r => new DirectoryMemberDto(r.Id, DisplayName(r.FirstName, r.LastName, r.Email)))
+            .OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    public async Task<IReadOnlyList<DirectoryTeamDto>> ListDirectoryTeamsAsync(CancellationToken cancellationToken) =>
+        await db.Teams.AsNoTracking()
+            .OrderBy(t => t.Name)
+            .Select(t => new DirectoryTeamDto(t.Id, t.Name))
+            .Take(DirectoryLimit)
+            .ToListAsync(cancellationToken);
+
+    private static string DisplayName(string? firstName, string? lastName, string? email)
+    {
+        var name = $"{firstName} {lastName}".Trim();
+        return name.Length > 0 ? name : email ?? "Unknown member";
+    }
 }
